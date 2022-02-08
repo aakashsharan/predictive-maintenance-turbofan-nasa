@@ -221,7 +221,7 @@ def CNNLSTM(dataset, file_no, Train=False, trj_wise=False, plot=False):
                     plt.ylim([0, 140])
                     ax.set_aspect('equal', adjustable='box')
                     plt.grid(True)
-                    plt.savefig('lstm_data'+str(file_no)+'_'+str(ep)+'.png')
+                    plt.savefig('lstm_data'+str(file_no)+'_'+f"{ep:02d}"+'.png')
                     plt.show()
                 #---------------
 
