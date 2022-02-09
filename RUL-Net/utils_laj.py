@@ -4,8 +4,9 @@ import tensorflow as tf
 import tensorflow.contrib.slim as slim
 from data_processing import MAXLIFE
 
-# Add by Yoshi
-tf.logging.set_verbosity(tf.logging.ERROR)
+# suppress tensorflow warning (added by Yoshi)
+tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
+
 
 def dense_layer(x, size,activation_fn, batch_norm = False,phase=False, drop_out=False, keep_prob=None, scope="fc_layer"):
     """

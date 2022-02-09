@@ -1,3 +1,7 @@
+# suppress pandas warning (added by Yoshi)
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
+
 import pandas as pd
 from matplotlib import pyplot as plt
 import numpy as np

@@ -49,14 +49,14 @@ def CNNLSTM(dataset, file_no, Train=False, trj_wise=False, plot=False):
     #----------------
     # hyperparameters
     #----------------
-    batch_size = 1024  # Batch size
+    batch_size = 1024           # Batch size
 
     # if Train == False: batch_size = 5
     if Train == False: batch_size = 10
 
-    sequence_length = 100  # Number of steps
+    sequence_length = 100       # Number of steps
 
-    learning_rate = 0.001  # 0.0001
+    learning_rate = 0.001       # 0.0001
 
     # epochs = 5000
     epochs = 21
@@ -167,7 +167,6 @@ def CNNLSTM(dataset, file_no, Train=False, trj_wise=False, plot=False):
                 # output checkpoint files
                 # if ep % 10 == 0 and ep != 0:
                 if ep % 5 == 0 and ep != 0:
-                # if ep % 1 == 0 and ep != 0:
                     save_path = saver.save(session, path_checkpoint)
                     if os.path.exists(path_checkpoint + '.meta'):
                         print("Model saved to file: %s" % path_checkpoint)
@@ -181,9 +180,9 @@ def CNNLSTM(dataset, file_no, Train=False, trj_wise=False, plot=False):
                 # added by Yoshi
                 #---------------
                 # if ep % 2 == 0 and ep != 0:
-                if True:
+                if plot:
                     trj_iteration = len(test_engine_id.unique())
-                    print("total trajectories: ", trj_iteration)
+                    # print("total trajectories: ", trj_iteration)
                     error_list = []
                     pred_list = []
                     expected_list = []
@@ -205,7 +204,6 @@ def CNNLSTM(dataset, file_no, Train=False, trj_wise=False, plot=False):
                         # print("id: ", itr + 1, "expected: ", RUL_expected, "\t", "predict: ", RUL_predict, "\t", "error: ",
                         #         RUL_predict - RUL_expected)
 
-
                     fig = plt.figure(figsize = (10, 10))
                     plt.rc('font', size = 18)
                     ax = fig.add_subplot()
@@ -215,16 +213,15 @@ def CNNLSTM(dataset, file_no, Train=False, trj_wise=False, plot=False):
 
                     plt.xlabel('true RUL')
                     plt.ylabel('predicted RUL')
-                    plt.title('RUL correlation (LSTM)')
+                    plt.title('RUL correlation (CNN+LSTM)')
                     # plt.legend(loc = 'lower right')
                     plt.xlim([0, 140])
                     plt.ylim([0, 140])
                     ax.set_aspect('equal', adjustable='box')
                     plt.grid(True)
                     plt.savefig('lstm_data'+str(file_no)+'_'+f"{ep:02d}"+'.png')
-                    plt.show()
+                    # plt.show()
                 #---------------
-
 
 
             save_path = saver.save(session, path_checkpoint)
@@ -232,8 +229,13 @@ def CNNLSTM(dataset, file_no, Train=False, trj_wise=False, plot=False):
                 print("Model saved to file: %s" % path_checkpoint)
             else:
                 print("NOT SAVED!!!", path_checkpoint)
+
+            fig = plt.figure(figsize = (10, 10))
             plt.plot(cost)
-            plt.show()
+            plt.xlabel('iterations')
+            plt.ylabel('cost')
+            plt.savefig('lstm_data'+str(file_no)+'_cost.png')
+            # plt.show()
 
         else:
             saver.restore(session, path_checkpoint)
