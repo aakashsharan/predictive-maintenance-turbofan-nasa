@@ -32,14 +32,17 @@ def kink_RUL(cycle_list, max_cycle):
             |                \
             |----------------------->
     '''
-    # knee_point = max_cycle - MAXLIFE
-    # modified by Yoshi
-    knee_point = max(max_cycle - MAXLIFE, 1)
+    knee_point = max_cycle - MAXLIFE
 
     kink_RUL = []
     stable_life = MAXLIFE
+    # modified by Yoshi
+    print(knee_point, max_cycle)
     for i in range(0, len(cycle_list)):
-        if i < knee_point:
+        if knee_point <= 0:
+            kink_RUL.append(max_cycle)
+            knee_point = 1
+        elif i < knee_point:
             kink_RUL.append(MAXLIFE)
         else:
             tmp = kink_RUL[i - 1] - (stable_life / (max_cycle - knee_point))
