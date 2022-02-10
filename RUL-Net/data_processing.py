@@ -37,7 +37,6 @@ def kink_RUL(cycle_list, max_cycle):
     kink_RUL = []
     stable_life = MAXLIFE
     # modified by Yoshi
-    print(knee_point, max_cycle)
     for i in range(0, len(cycle_list)):
         if knee_point <= 0:
             kink_RUL.append(max_cycle)
