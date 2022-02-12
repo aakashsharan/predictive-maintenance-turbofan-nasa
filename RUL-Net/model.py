@@ -1,13 +1,14 @@
 from matplotlib import pyplot as plt
 import time
 import datetime
+import sys
 from utils_laj import *
 from data_processing import get_CMAPSSData, get_PHM08Data, data_augmentation, analyse_Data
 
 today = datetime.date.today()
 
 
-def CNNLSTM(dataset, file_no, Train=False, trj_wise=False, plot=False):
+def CNNLSTM(dataset, file_no, Train=False, trj_wise=False, plot=False, file_test=None):
     '''
     The architecture is a Meny-to-meny model combining CNN and LSTM models
     :param dataset: select the specific dataset between PHM08 or CMAPSS
@@ -30,7 +31,7 @@ def CNNLSTM(dataset, file_no, Train=False, trj_wise=False, plot=False):
 
 
     if dataset == "cmapss":
-        training_data, testing_data, training_pd, testing_pd = get_CMAPSSData(save=False)
+        training_data, testing_data, training_pd, testing_pd = get_CMAPSSData(save=False, file_test=file_test)
         x_train = training_data[:, :training_data.shape[1] - 1]
         y_train = training_data[:, training_data.shape[1] - 1]
         print("training data CNNLSTM: ", x_train.shape, y_train.shape)
@@ -54,7 +55,8 @@ def CNNLSTM(dataset, file_no, Train=False, trj_wise=False, plot=False):
     # if Train == False: batch_size = 5
     if Train == False: batch_size = 10
 
-    sequence_length = 100       # Number of steps
+    # sequence_length = 100       # Number of steps
+    sequence_length = 100
 
     learning_rate = 0.001       # 0.0001
 
@@ -239,9 +241,9 @@ def CNNLSTM(dataset, file_no, Train=False, trj_wise=False, plot=False):
 
         else:
             saver.restore(session, path_checkpoint)
-            print("-----")
+            print("---")
             print("Model restored from file: %s" % path_checkpoint)
-            print("-----")
+            print("---")
 
             if trj_wise:
                 trj_iteration = len(test_engine_id.unique())
@@ -273,19 +275,43 @@ def CNNLSTM(dataset, file_no, Train=False, trj_wise=False, plot=False):
                 error_list = error_list.ravel()
                 rmse = np.sqrt(np.sum(np.square(error_list)) / len(error_list))  # RMSE
                 print(rmse, scoring_func(error_list))
-                if plot:
-                    plt.figure()
-                    # plt.plot(expected_list, 'o', color='black', label="expected")
-                    # plt.plot(pred_list, 'o', color='red', label="predicted")
-                    # plt.figure()
-                    plt.plot(np.sort(error_list), 'o', color='red', label="error")
-                    plt.legend()
-                    plt.show()
-                fig, ax = plt.subplots()
-                ax.stem(expected_list, linefmt='b-', label="expected")
-                ax.stem(pred_list, linefmt='r-', label="predicted")
-                plt.legend()
-                plt.show()
+
+                print("---")
+                # if plot:
+                #     plt.figure()
+                #     # plt.plot(expected_list, 'o', color='black', label="expected")
+                #     # plt.plot(pred_list, 'o', color='red', label="predicted")
+                #     # plt.figure()
+                #     plt.plot(np.sort(error_list), 'o', color='red', label="error")
+                #     plt.legend()
+                #     plt.savefig('foo1.png')
+                #     # plt.show()
+
+                # fig, ax = plt.subplots()
+                # ax.stem(expected_list, linefmt='b-', label="expected")
+                # ax.stem(pred_list, linefmt='r-', label="predicted")
+                # plt.legend()
+                # plt.savefig('foo2.png')
+                # # plt.show()
+
+
+                fig = plt.figure(figsize = (10, 10))
+                plt.rc('font', size = 18)
+                ax = fig.add_subplot()
+
+                plt.scatter(expected_list, pred_list, alpha=0.7, s=100)
+                plt.plot([0, 1000], [0, 1000],'k--')
+
+                plt.xlabel('true RUL')
+                plt.ylabel('predicted RUL')
+                plt.title('RUL correlation (CNN+LSTM)')
+                # plt.legend(loc = 'lower right')
+                plt.xlim([0, 140])
+                plt.ylim([0, 140])
+                ax.set_aspect('equal', adjustable='box')
+                plt.grid(True)
+                # plt.savefig('lstm_data'+str(file_no)+'_'+f"{ep:02d}"+'.png')
+                plt.savefig('foo.png')
 
             else:
                 x_validation = x_test
@@ -329,15 +355,21 @@ def CNNLSTM(dataset, file_no, Train=False, trj_wise=False, plot=False):
 
 if __name__ == "__main__":
 
-    dataset = "cmapss"
-    file = 1 # represent the sub-dataset for cmapss
-    TRAIN = True
-    # TRAIN = False
+    dataset     = "cmapss"
+    file        = 1            # represent the sub-dataset for cmapss
+    # TRAIN     = True
+    TRAIN       = False
+    TRJ_WISE    = True
+    PLOT        = True
 
-    TRJ_WISE = True
-    PLOT = True
+    # file name of test data
+    if len(sys.argv) == 1:
+        FILE_TEST = None
+    else:
+        FILE_TEST = sys.argv[1]
+    print("test data file name:", FILE_TEST)
 
-    analyse_Data(dataset=dataset, files=[file], plot=False, min_max=False)
+    analyse_Data(dataset=dataset, files=[file], file_test=FILE_TEST, plot=False, min_max=False)
 
     if TRAIN: data_augmentation(files=file,
                                 low=[10, 35, 50, 70, 90, 110, 130, 150, 170, 190, 210, 230, 250, 270, 290, 310, 330],
@@ -347,4 +379,4 @@ if __name__ == "__main__":
 
     from data_processing import RESCALE, test_engine_id
 
-    CNNLSTM(dataset=dataset, file_no=file, Train=TRAIN, trj_wise=TRJ_WISE, plot=PLOT)
+    CNNLSTM(dataset=dataset, file_no=file, Train=TRAIN, trj_wise=TRJ_WISE, plot=PLOT, file_test=FILE_TEST)
