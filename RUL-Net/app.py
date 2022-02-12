@@ -1,4 +1,4 @@
-import flask
+from flask import Flask
 from flask import Flask, request, jsonify, render_template
 from file_read_backwards import FileReadBackwards
 
