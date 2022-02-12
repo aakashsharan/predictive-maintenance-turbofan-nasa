@@ -10,7 +10,8 @@ with FileReadBackwards("app.py") as f:
 
 @app.route('/', methods=['GET'])
 def home():
-    return render_template('example.html', b_lines=b_lines)
+    return('<h1>Booz-Allen Capstone</h1>')
+    # return render_template('example.html', b_lines=b_lines)
 
 
 if __name__ == "__main__":
