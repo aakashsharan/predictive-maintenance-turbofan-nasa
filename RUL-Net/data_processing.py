@@ -107,10 +107,10 @@ def get_CMAPSSData(save=False, save_training_data=True, save_testing_data=True, 
 
     if save_training_data:  ### Training ###
 
-        train_FD001 = pd.read_table("./CMAPSSData/train_FD001.txt", header=None, delim_whitespace=True)
-        train_FD002 = pd.read_table("./CMAPSSData/train_FD002.txt", header=None, delim_whitespace=True)
-        train_FD003 = pd.read_table("./CMAPSSData/train_FD003.txt", header=None, delim_whitespace=True)
-        train_FD004 = pd.read_table("./CMAPSSData/train_FD004.txt", header=None, delim_whitespace=True)
+        train_FD001 = pd.read_table("dataset/CMAPSSData/train_FD001.txt", header=None, delim_whitespace=True)
+        train_FD002 = pd.read_table("dataset/CMAPSSData/train_FD002.txt", header=None, delim_whitespace=True)
+        train_FD003 = pd.read_table("dataset/CMAPSSData/train_FD003.txt", header=None, delim_whitespace=True)
+        train_FD004 = pd.read_table("dataset/CMAPSSData/train_FD004.txt", header=None, delim_whitespace=True)
         train_FD001.columns = column_name
         train_FD002.columns = column_name
         train_FD003.columns = column_name
@@ -164,20 +164,20 @@ def get_CMAPSSData(save=False, save_training_data=True, save_testing_data=True, 
 
     if save_testing_data:  ### testing ###
 
-        test_FD001 = pd.read_table("./CMAPSSData/test_FD001.txt", header=None, delim_whitespace=True)
-        test_FD002 = pd.read_table("./CMAPSSData/test_FD002.txt", header=None, delim_whitespace=True)
-        test_FD003 = pd.read_table("./CMAPSSData/test_FD003.txt", header=None, delim_whitespace=True)
-        test_FD004 = pd.read_table("./CMAPSSData/test_FD004.txt", header=None, delim_whitespace=True)
+        test_FD001 = pd.read_table("dataset/CMAPSSData/test_FD001.txt", header=None, delim_whitespace=True)
+        test_FD002 = pd.read_table("dataset/CMAPSSData/test_FD002.txt", header=None, delim_whitespace=True)
+        test_FD003 = pd.read_table("dataset/CMAPSSData/test_FD003.txt", header=None, delim_whitespace=True)
+        test_FD004 = pd.read_table("dataset/CMAPSSData/test_FD004.txt", header=None, delim_whitespace=True)
         test_FD001.columns = column_name
         test_FD002.columns = column_name
         test_FD003.columns = column_name
         test_FD004.columns = column_name
 
         # load RUL data
-        RUL_FD001 = pd.read_table("./CMAPSSData/RUL_FD001.txt", header=None, delim_whitespace=True)
-        RUL_FD002 = pd.read_table("./CMAPSSData/RUL_FD002.txt", header=None, delim_whitespace=True)
-        RUL_FD003 = pd.read_table("./CMAPSSData/RUL_FD003.txt", header=None, delim_whitespace=True)
-        RUL_FD004 = pd.read_table("./CMAPSSData/RUL_FD004.txt", header=None, delim_whitespace=True)
+        RUL_FD001 = pd.read_table("dataset/CMAPSSData/RUL_FD001.txt", header=None, delim_whitespace=True)
+        RUL_FD002 = pd.read_table("dataset/CMAPSSData/RUL_FD002.txt", header=None, delim_whitespace=True)
+        RUL_FD003 = pd.read_table("dataset/CMAPSSData/RUL_FD003.txt", header=None, delim_whitespace=True)
+        RUL_FD004 = pd.read_table("dataset/CMAPSSData/RUL_FD004.txt", header=None, delim_whitespace=True)
         RUL_FD001.columns = ['RUL']
         RUL_FD002.columns = ['RUL']
         RUL_FD003.columns = ['RUL']
@@ -333,7 +333,7 @@ def data_augmentation(files=1, low=[10, 40, 90, 170], high=[35, 85, 160, 250], p
         if combine:
             train_FD00x,_,_ = combine_FD001_and_FD003()
         else:
-            file_path = "./CMAPSSData/train_FD00" + str(files) + ".txt"
+            file_path = "dataset/CMAPSSData/train_FD00" + str(files) + ".txt"
             train_FD00x = pd.read_table(file_path, header=None, delim_whitespace=True)
             train_FD00x.columns = column_name
             print(file_path.split("/")[-1])
@@ -526,8 +526,8 @@ def combine_FD001_and_FD003():
                    's4', 's5', 's6', 's7', 's8', 's9', 's10', 's11', 's12', 's13', 's14',
                    's15', 's16', 's17', 's18', 's19', 's20', 's21']
 
-    train_FD001 = pd.read_table("./CMAPSSData/train_FD001.txt", header=None, delim_whitespace=True)
-    train_FD003 = pd.read_table("./CMAPSSData/train_FD003.txt", header=None, delim_whitespace=True)
+    train_FD001 = pd.read_table("dataset/CMAPSSData/train_FD001.txt", header=None, delim_whitespace=True)
+    train_FD003 = pd.read_table("dataset/CMAPSSData/train_FD003.txt", header=None, delim_whitespace=True)
     train_FD001.columns = column_name
     train_FD003.columns = column_name
 
@@ -536,8 +536,8 @@ def combine_FD001_and_FD003():
     train_FD003.index = range(len(train_FD001), len(train_FD001) + len(train_FD003))
     train_FD001_FD002 = pd.concat([train_FD001,train_FD003])
 
-    test_FD001 = pd.read_table("./CMAPSSData/test_FD001.txt", header=None, delim_whitespace=True)
-    test_FD003 = pd.read_table("./CMAPSSData/test_FD003.txt", header=None, delim_whitespace=True)
+    test_FD001 = pd.read_table("dataset/CMAPSSData/test_FD001.txt", header=None, delim_whitespace=True)
+    test_FD003 = pd.read_table("dataset/CMAPSSData/test_FD003.txt", header=None, delim_whitespace=True)
     test_FD001.columns = column_name
     test_FD003.columns = column_name
 
@@ -546,8 +546,8 @@ def combine_FD001_and_FD003():
     test_FD003.index = range(len(test_FD001), len(test_FD001) + len(test_FD003))
     test_FD001_FD002 = pd.concat([test_FD001,test_FD003])
 
-    RUL_FD001 = pd.read_table("./CMAPSSData/RUL_FD001.txt", header=None, delim_whitespace=True)
-    RUL_FD003 = pd.read_table("./CMAPSSData/RUL_FD003.txt", header=None, delim_whitespace=True)
+    RUL_FD001 = pd.read_table("dataset/CMAPSSData/RUL_FD001.txt", header=None, delim_whitespace=True)
+    RUL_FD003 = pd.read_table("dataset/CMAPSSData/RUL_FD003.txt", header=None, delim_whitespace=True)
     RUL_FD001.columns = ['RUL']
     RUL_FD003.columns = ['RUL']
     RUL_FD003.index = range(len(RUL_FD001), len(RUL_FD001) + len(RUL_FD003))
