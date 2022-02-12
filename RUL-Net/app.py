@@ -2,7 +2,7 @@ from flask import Flask
 from flask import Flask, request, jsonify, render_template
 from file_read_backwards import FileReadBackwards
 
-app = flask.Flask(__name__)
+app = Flask(__name__)
 
 with FileReadBackwards("app.py") as f:
     # getting lines by lines starting from the last line up
