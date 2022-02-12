@@ -1,0 +1,47 @@
+---------
+./Save/Save_CNNLSTM/CNNLSTM_ML120_GRAD1_kinkRUL_FD001/CNN1D_3_lstm_2_layers.txt
+
+--------- 
+
+---------
+MAXLIFE:  120 
+
+learning_rate:  0.001
+batch_size:  1024
+lstm_layers:  2
+lstm_layer_size:  72
+fc_layer_size:  50 
+
+sequence_length:  100
+n_channels:  24
+--------- 
+
+---------
+Variables: name (type shape) [size]
+--------- 
+
+conv_1/conv1d/kernel:0 (float32_ref 2x24x18) [864, bytes: 3456]
+conv_1/conv1d/bias:0 (float32_ref 18) [18, bytes: 72]
+conv_2/conv1d/kernel:0 (float32_ref 2x18x36) [1296, bytes: 5184]
+conv_2/conv1d/bias:0 (float32_ref 36) [36, bytes: 144]
+conv_3/conv1d/kernel:0 (float32_ref 2x36x72) [5184, bytes: 20736]
+conv_3/conv1d/bias:0 (float32_ref 72) [72, bytes: 288]
+fc_1/dense/kernel:0 (float32_ref 936x2400) [2246400, bytes: 8985600]
+fc_1/dense/bias:0 (float32_ref 2400) [2400, bytes: 9600]
+rnn/multi_rnn_cell/cell_0/lstm_cell/kernel:0 (float32_ref 96x288) [27648, bytes: 110592]
+rnn/multi_rnn_cell/cell_0/lstm_cell/bias:0 (float32_ref 288) [288, bytes: 1152]
+rnn/multi_rnn_cell/cell_0/lstm_cell/w_f_diag:0 (float32_ref 72) [72, bytes: 288]
+rnn/multi_rnn_cell/cell_0/lstm_cell/w_i_diag:0 (float32_ref 72) [72, bytes: 288]
+rnn/multi_rnn_cell/cell_0/lstm_cell/w_o_diag:0 (float32_ref 72) [72, bytes: 288]
+rnn/multi_rnn_cell/cell_1/lstm_cell/kernel:0 (float32_ref 144x288) [41472, bytes: 165888]
+rnn/multi_rnn_cell/cell_1/lstm_cell/bias:0 (float32_ref 288) [288, bytes: 1152]
+rnn/multi_rnn_cell/cell_1/lstm_cell/w_f_diag:0 (float32_ref 72) [72, bytes: 288]
+rnn/multi_rnn_cell/cell_1/lstm_cell/w_i_diag:0 (float32_ref 72) [72, bytes: 288]
+rnn/multi_rnn_cell/cell_1/lstm_cell/w_o_diag:0 (float32_ref 72) [72, bytes: 288]
+fc_2/dense/kernel:0 (float32_ref 72x50) [3600, bytes: 14400]
+fc_2/dense/bias:0 (float32_ref 50) [50, bytes: 200]
+fc_3_output/dense/kernel:0 (float32_ref 50x1) [50, bytes: 200]
+fc_3_output/dense/bias:0 (float32_ref 1) [1, bytes: 4]
+
+Total size of variables: 2330099
+Total bytes of variables: 9320396
