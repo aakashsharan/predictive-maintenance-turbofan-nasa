@@ -168,10 +168,10 @@ def get_CMAPSSData(save=False, save_training_data=True, save_testing_data=True, 
             test_FD003 = pd.read_table("./dataset/CMAPSSData/test_FD003.txt", header=None, delim_whitespace=True)
             test_FD004 = pd.read_table("./dataset/CMAPSSData/test_FD004.txt", header=None, delim_whitespace=True)
         else:
-            test_FD001 = pd.read_table("./dataset/CMAPSSData/"+file_test, header=None, delim_whitespace=True)
-            test_FD002 = pd.read_table("./dataset/CMAPSSData/"+file_test, header=None, delim_whitespace=True)
-            test_FD003 = pd.read_table("./dataset/CMAPSSData/"+file_test, header=None, delim_whitespace=True)
-            test_FD004 = pd.read_table("./dataset/CMAPSSData/"+file_test, header=None, delim_whitespace=True)
+            test_FD001 = pd.read_table("./dataset/demo/"+file_test, header=None, delim_whitespace=True)
+            test_FD002 = pd.read_table("./dataset/demo/"+file_test, header=None, delim_whitespace=True)
+            test_FD003 = pd.read_table("./dataset/demo/"+file_test, header=None, delim_whitespace=True)
+            test_FD004 = pd.read_table("./dataset/demo/"+file_test, header=None, delim_whitespace=True)
 
         test_FD001.columns = column_name
         test_FD002.columns = column_name
