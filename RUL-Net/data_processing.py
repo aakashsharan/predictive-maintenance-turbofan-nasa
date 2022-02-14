@@ -8,8 +8,7 @@ import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 import random
 
-MAXLIFE = 120
-# MAXLIFE = 150
+MAXLIFE = 130
 
 SCALE = 1
 RESCALE = 1
@@ -61,9 +60,7 @@ def compute_rul_of_one_id(FD00X_of_one_id, max_cycle_rul=None):
         max_cycle = max(cycle_list)  # Failure cycle
     else:
         max_cycle = max(cycle_list) + max_cycle_rul
-        # print(max(cycle_list), max_cycle_rul)
 
-    # return kink_RUL(cycle_list,max_cycle)
     return kink_RUL(cycle_list, max_cycle)
 
 

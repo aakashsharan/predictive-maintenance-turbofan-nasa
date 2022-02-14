@@ -168,8 +168,12 @@ def trjectory_generator(x_train, y_train, test_engine_id, sequence_length, graph
                     x_tmp = x_train[idx:]
                     y_tmp = y_train[idx:]
                     remain = idx + sequence_length - x_train.shape[0]
-                    x_batch[i] = np.concatenate((x_tmp, x_train[0:remain]))
-                    y_batch[i] = np.concatenate((y_tmp, y_train[0:remain]))
+                    # x_batch[i] = np.concatenate((x_tmp, x_train[0:remain]))
+                    # y_batch[i] = np.concatenate((y_tmp, y_train[0:remain]))
+
+                    # modified by Yoshi
+                    x_batch[i] = np.concatenate((x_tmp, -0.01 * np.ones(shape=(remain, num_x_sensors), dtype=np.float32)))
+                    y_batch[i] = np.concatenate((y_tmp, -0.01 * np.ones(shape=(remain), dtype=np.float32)))
                     break
 
                 x_batch[i] = x_train[idx:idx + sequence_length]

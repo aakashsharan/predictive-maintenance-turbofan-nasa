@@ -18,13 +18,13 @@ def CNNLSTM(dataset, file_no, Train=False, trj_wise=False, plot=False, file_test
 
     #### checkpoint saving path ####
     if file_no == 1:
-        path_checkpoint = './Save/Save_CNNLSTM/CNNLSTM_ML120_GRAD1_kinkRUL_FD001/CNN1D_3_lstm_2_layers'
+        path_checkpoint = './Save/Save_CNNLSTM/CNNLSTM_ML130_GRAD1_kinkRUL_FD001/CNN1D_3_lstm_2_layers'
     elif file_no == 2:
-        path_checkpoint = './Save/Save_CNNLSTM/CNNLSTM_ML120_GRAD1_kinkRUL_FD002/CNN1D_3_lstm_2_layers'
+        path_checkpoint = './Save/Save_CNNLSTM/CNNLSTM_ML130_GRAD1_kinkRUL_FD002/CNN1D_3_lstm_2_layers'
     elif file_no == 3:
-        path_checkpoint = './Save/Save_CNNLSTM/CNNLSTM_ML120_GRAD1_kinkRUL_FD003/CNN1D_3_lstm_2_layers'
+        path_checkpoint = './Save/Save_CNNLSTM/CNNLSTM_ML130_GRAD1_kinkRUL_FD003/CNN1D_3_lstm_2_layers'
     elif file_no == 4:
-        path_checkpoint = './Save/Save_CNNLSTM/CNNLSTM_ML120_GRAD1_kinkRUL_FD004/CNN1D_3_lstm_2_layers'
+        path_checkpoint = './Save/Save_CNNLSTM/CNNLSTM_ML130_GRAD1_kinkRUL_FD004/CNN1D_3_lstm_2_layers'
     else:
         raise ValueError("Save path not defined")
     ##################################
@@ -34,11 +34,11 @@ def CNNLSTM(dataset, file_no, Train=False, trj_wise=False, plot=False, file_test
         training_data, testing_data, training_pd, testing_pd = get_CMAPSSData(save=False, file_test=file_test)
         x_train = training_data[:, :training_data.shape[1] - 1]
         y_train = training_data[:, training_data.shape[1] - 1]
-        print("training data CNNLSTM: ", x_train.shape, y_train.shape)
+        print("training data CNN-LSTM: ", x_train.shape, y_train.shape)
 
         x_test = testing_data[:, :testing_data.shape[1] - 1]
         y_test = testing_data[:, testing_data.shape[1] - 1]
-        print("testing data CNNLSTM: ", x_test.shape, y_test.shape)
+        print("testing data CNN-LSTM: ", x_test.shape, y_test.shape)
 
     elif dataset == "phm":
         training_data, testing_data, phm_testing_data = get_PHM08Data(save=False)
@@ -159,7 +159,7 @@ def CNNLSTM(dataset, file_no, Train=False, trj_wise=False, plot=False, file_test
 
                 time_per_ep = (time.time() - __start)
                 time_remaining = ((epochs - ep) * time_per_ep) / 3600
-                print("CNNLSTM", "epoch:", ep, "\tTrainig-",
+                print("CNN-LSTM", "epoch:", ep, "\tTrainig-",
                       "MSE:", mse_train, "RMSE:", rmse_train, "\tTesting-", "MSE", mse_test, "RMSE", rmse_test,
                       "\ttime/epoch:", round(time_per_ep, 2), "\ttime_remaining: ",
                       int(time_remaining), " hr:", round((time_remaining % 1) * 60, 1), " min", "\ttime_stamp: ",
@@ -271,6 +271,34 @@ def CNNLSTM(dataset, file_no, Train=False, trj_wise=False, plot=False, file_test
                     # plt.plot(__y_pred* RESCALE, label="prediction")
                     # plt.plot(__y* RESCALE, label="expected")
                     # plt.show()
+
+                    #---
+                    # create a plot
+                    #---
+                    if trj_iteration == 1:
+                        trj_end = np.argmax(__y == lower_bound) - 1
+                        trj_pred = __y_pred[:trj_end]
+                        trj_pred[trj_pred < 0] = 0
+                        trj_rul = __y[:trj_end]
+                        engine_id = test_engine_id.unique()
+
+                        fig = plt.figure(figsize = (10, 10))
+                        plt.rc('font', size = 18)
+                        ax = fig.add_subplot()
+
+                        plt.plot(np.arange(1,len(trj_pred)+1, 1), trj_pred, 'bo',  label="prediction")
+                        plt.plot(np.arange(1,len(trj_pred)+1, 1), trj_rul,  'k--', label="expected")
+                        plt.xlabel('cycles')
+                        plt.ylabel('remaining useful life (RUL)')
+                        plt.title('Engine ID: '+str(engine_id[0]))
+                        # plt.title('Engine ID: '+str(itr + 1))
+                        plt.legend(loc = 'lower left')
+                        plt.grid(True)
+                        plt.savefig('rul.png')
+                        # plt.savefig('rul_e'+f"{itr + 1:03d}"+'.png')
+
+
+
                 error_list = np.array(error_list)
                 error_list = error_list.ravel()
                 rmse = np.sqrt(np.sum(np.square(error_list)) / len(error_list))  # RMSE
@@ -295,23 +323,23 @@ def CNNLSTM(dataset, file_no, Train=False, trj_wise=False, plot=False, file_test
                 # # plt.show()
 
 
-                fig = plt.figure(figsize = (10, 10))
-                plt.rc('font', size = 18)
-                ax = fig.add_subplot()
+                # fig = plt.figure(figsize = (10, 10))
+                # plt.rc('font', size = 18)
+                # ax = fig.add_subplot()
 
-                plt.scatter(expected_list, pred_list, alpha=0.7, s=100)
-                plt.plot([0, 1000], [0, 1000],'k--')
+                # plt.scatter(expected_list, pred_list, alpha=0.7, s=100)
+                # plt.plot([0, 1000], [0, 1000],'k--')
 
-                plt.xlabel('true RUL')
-                plt.ylabel('predicted RUL')
-                plt.title('RUL correlation (CNN+LSTM)')
-                # plt.legend(loc = 'lower right')
-                plt.xlim([0, 140])
-                plt.ylim([0, 140])
-                ax.set_aspect('equal', adjustable='box')
-                plt.grid(True)
-                # plt.savefig('lstm_data'+str(file_no)+'_'+f"{ep:02d}"+'.png')
-                plt.savefig('foo.png')
+                # plt.xlabel('true RUL')
+                # plt.ylabel('predicted RUL')
+                # plt.title('RUL correlation (CNN+LSTM)')
+                # # plt.legend(loc = 'lower right')
+                # plt.xlim([0, 140])
+                # plt.ylim([0, 140])
+                # ax.set_aspect('equal', adjustable='box')
+                # plt.grid(True)
+                # # plt.savefig('lstm_data'+str(file_no)+'_'+f"{ep:02d}"+'.png')
+                # plt.savefig('foo.png')
 
             else:
                 x_validation = x_test
@@ -367,7 +395,8 @@ if __name__ == "__main__":
         FILE_TEST = None
     else:
         FILE_TEST = sys.argv[1]
-    print("test data file name:", FILE_TEST)
+        file      = int(FILE_TEST[9])
+        print("test data file name:", FILE_TEST)
 
     analyse_Data(dataset=dataset, files=[file], file_test=FILE_TEST, plot=False, min_max=False)
 
