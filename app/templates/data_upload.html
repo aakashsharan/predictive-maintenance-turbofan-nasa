@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+    <head>
+        <meta charset="utf-8">
+        <title>Turbofan Engine Analysis: Predictive Maintenance</title>
+    </head>
+    <body>
+        <br>
+        <h1>Turbofan Engine Analysis: Predictive Maintenance</h1>
+        <form method="POST" enctype=multipart/form-data action='/'>
+            {{ form.hidden_tag() }}
+            <fieldset>
+                <div class="form-row">
+                    <div class="col-md-6 small">
+                    <h4 class='mb-1'>{{ form.engine_no.label }}</h4>
+                    <div class="text-dark">{{ form.engine_no(size=1, class_='form-control') }}</div>
+                    </div>
+                </div>
+
+                <div class="form-row small mt-2">
+                    <div class="col-md-6">
+                        <h4 class='mb-1'>Engine Data Upload</h4>
+                        <form action="" method=post enctype=multipart/form-data>
+                            <p><input type=file name=file>
+                            <div class='row mt-5'>
+                                <div class='col-5'>
+                                    <input class="text-dark btn btn-light" type=submit value=submit id="opsubmit">
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </fieldset>
+        </form>
+    </body>
+</html>

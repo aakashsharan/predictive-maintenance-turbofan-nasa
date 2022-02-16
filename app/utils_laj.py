@@ -2,7 +2,7 @@ import os
 import numpy as np
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
-from data_processing import MAXLIFE
+from app.data_processing import MAXLIFE
 
 # suppress tensorflow warning (added by Yoshi)
 tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)

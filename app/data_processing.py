@@ -8,7 +8,7 @@ import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 import random
 
-MAXLIFE = 120
+MAXLIFE = 130
 # MAXLIFE = 150
 
 SCALE = 1
