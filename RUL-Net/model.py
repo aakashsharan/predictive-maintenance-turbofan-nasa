@@ -18,13 +18,15 @@ def CNNLSTM(dataset, file_no, Train=False, trj_wise=False, plot=False, file_test
 
     #### checkpoint saving path ####
     if file_no == 1:
-        path_checkpoint = './Save/Save_CNNLSTM/CNNLSTM_ML130_GRAD1_kinkRUL_FD001/CNN1D_3_lstm_2_layers'
+        # path_checkpoint = './Save/Save_CNNLSTM/CNNLSTM_ML130_GRAD1_kinkRUL_FD001/CNN1D_3_lstm_2_layers'
+        path_checkpoint = './Save/Save_CNNLSTM/CNNLSTM_ML130_GRAD1_kinkRUL_FD001_seq200/CNN1D_3_lstm_2_layers'
     elif file_no == 2:
         path_checkpoint = './Save/Save_CNNLSTM/CNNLSTM_ML130_GRAD1_kinkRUL_FD002/CNN1D_3_lstm_2_layers'
     elif file_no == 3:
         path_checkpoint = './Save/Save_CNNLSTM/CNNLSTM_ML130_GRAD1_kinkRUL_FD003/CNN1D_3_lstm_2_layers'
     elif file_no == 4:
-        path_checkpoint = './Save/Save_CNNLSTM/CNNLSTM_ML130_GRAD1_kinkRUL_FD004/CNN1D_3_lstm_2_layers'
+        # path_checkpoint = './Save/Save_CNNLSTM/CNNLSTM_ML130_GRAD1_kinkRUL_FD004/CNN1D_3_lstm_2_layers'
+        path_checkpoint = './Save/Save_CNNLSTM/CNNLSTM_ML130_GRAD1_kinkRUL_FD004_seq200/CNN1D_3_lstm_2_layers'
     else:
         raise ValueError("Save path not defined")
     ##################################
@@ -56,7 +58,7 @@ def CNNLSTM(dataset, file_no, Train=False, trj_wise=False, plot=False, file_test
     if Train == False: batch_size = 10
 
     # sequence_length = 100       # Number of steps
-    sequence_length = 100
+    sequence_length = 200
 
     learning_rate = 0.001       # 0.0001
 
@@ -69,7 +71,6 @@ def CNNLSTM(dataset, file_no, Train=False, trj_wise=False, plot=False, file_test
 
     lstm_size = n_channels * 3      # 3 times the amount of channels
     num_layers = 2                  # 2  # Number of layers
-
 
 
     X = tf.placeholder(tf.float32, [None, sequence_length, n_channels], name='inputs')
@@ -168,7 +169,8 @@ def CNNLSTM(dataset, file_no, Train=False, trj_wise=False, plot=False, file_test
 
                 # output checkpoint files
                 # if ep % 10 == 0 and ep != 0:
-                if ep % 5 == 0 and ep != 0:
+                # if ep % 5 == 0 and ep != 0:
+                if ep % 1 == 0 and ep != 0:
                     save_path = saver.save(session, path_checkpoint)
                     if os.path.exists(path_checkpoint + '.meta'):
                         print("Model saved to file: %s" % path_checkpoint)
@@ -247,7 +249,9 @@ def CNNLSTM(dataset, file_no, Train=False, trj_wise=False, plot=False, file_test
 
             if trj_wise:
                 trj_iteration = len(test_engine_id.unique())
-                print("total trajectories: ", trj_iteration)
+                # print("total trajectories: ", trj_iteration)
+                # print("engine id: ", test_engine_id.unique())
+
                 error_list = []
                 pred_list = []
                 expected_list = []
@@ -282,29 +286,40 @@ def CNNLSTM(dataset, file_no, Train=False, trj_wise=False, plot=False, file_test
                         trj_rul = __y[:trj_end]
                         engine_id = test_engine_id.unique()
 
-                        fig = plt.figure(figsize = (10, 10))
-                        plt.rc('font', size = 18)
-                        ax = fig.add_subplot()
+                        fig, (ax1, ax2) = plt.subplots(1, 2, figsize = (10, 5))
+                        plt.rc('font', size = 14)
+                        plt.rc('axes', titlesize=14)
+                        plt.rc('legend', fontsize=14)
 
-                        plt.plot(np.arange(1,len(trj_pred)+1, 1), trj_pred, 'bo',  label="prediction")
-                        plt.plot(np.arange(1,len(trj_pred)+1, 1), trj_rul,  'k--', label="expected")
-                        plt.xlabel('cycles')
-                        plt.ylabel('remaining useful life (RUL)')
-                        plt.title('Engine ID: '+str(engine_id[0]))
-                        # plt.title('Engine ID: '+str(itr + 1))
-                        plt.legend(loc = 'lower left')
-                        plt.grid(True)
+                        ax1.plot(np.arange(1,len(trj_pred)+1, 1), trj_pred, 'bo',  label="prediction")
+                        ax1.plot(np.arange(1,len(trj_pred)+1, 1), trj_rul,  'k--', label="expected")
+                        ax1.set_xlabel('cycles', fontsize=14)
+                        ax1.set_ylabel('remaining useful life (RUL)', fontsize=14)
+                        ax1.set_title('Engine ID: '+str(engine_id[0]))
+                        ax1.legend(loc='lower left')
+                        ax1.grid(True)
+
+                        if file_no == 1:
+                            ax2.plot(0, 0, 'og', markersize=8, label='fight conditions')
+                        elif file_no == 4:
+                            ax2.plot((x_test[:,1] + 1.98)*0.84/2.816, (x_test[:,0] + 1.734)*42/2.887, 'og', markersize=8, label='fight conditions')
+                        ax2.fill_between([0, 0.2, 0.4, 0.6, 0.8, 0.9], [0, 0, 0, 0, 10, 15], [17, 17, 40, 40, 40, 40], alpha=0.3, linewidth=0)
+                        ax2.set_xlabel('Mach number', fontsize=14)
+                        ax2.set_ylabel('flight altitude (kft)', fontsize=14)
+                        ax2.set_title('flight envelope')
+                        ax2.legend(loc='upper left')
+                        plt.xlim([-0.1, 1])
+                        plt.ylim([-5, 50])
+                        ax2.grid(True)
+
                         plt.savefig('rul.png')
                         # plt.savefig('rul_e'+f"{itr + 1:03d}"+'.png')
-
-
 
                 error_list = np.array(error_list)
                 error_list = error_list.ravel()
                 rmse = np.sqrt(np.sum(np.square(error_list)) / len(error_list))  # RMSE
                 print(rmse, scoring_func(error_list))
 
-                print("---")
                 # if plot:
                 #     plt.figure()
                 #     # plt.plot(expected_list, 'o', color='black', label="expected")
@@ -365,6 +380,7 @@ def CNNLSTM(dataset, file_no, Train=False, trj_wise=False, plot=False, file_test
                     full_prediction.append(__y_pred * RESCALE)
                     actual_rul.append(__y * RESCALE)
                     error_list.append(error * RESCALE)
+
                 full_prediction = np.array(full_prediction)
                 full_prediction = full_prediction.ravel()
                 actual_rul = np.array(actual_rul)
@@ -385,7 +401,7 @@ if __name__ == "__main__":
 
     dataset     = "cmapss"
     file        = 1            # represent the sub-dataset for cmapss
-    # TRAIN     = True
+    # TRAIN       = True
     TRAIN       = False
     TRJ_WISE    = True
     PLOT        = True
