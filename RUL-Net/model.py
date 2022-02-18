@@ -286,33 +286,40 @@ def CNNLSTM(dataset, file_no, Train=False, trj_wise=False, plot=False, file_test
                         trj_rul = __y[:trj_end]
                         engine_id = test_engine_id.unique()
 
+                        drul = np.array(trj_pred - trj_rul)
+                        drul = drul.ravel()
+                        RMSE_cycle = np.sqrt(np.sum(np.square(drul)) / len(drul))
+                        print("RMSE_cycles:", RMSE_cycle)
+                        print("score_cycles: ", scoring_func(RMSE_cycle))
+
                         fig, (ax1, ax2) = plt.subplots(1, 2, figsize = (10, 5))
                         plt.rc('font', size = 14)
                         plt.rc('axes', titlesize=14)
                         plt.rc('legend', fontsize=14)
 
-                        ax1.plot(np.arange(1,len(trj_pred)+1, 1), trj_pred, 'bo',  label="prediction")
-                        ax1.plot(np.arange(1,len(trj_pred)+1, 1), trj_rul,  'k--', label="expected")
-                        ax1.set_xlabel('cycles', fontsize=14)
-                        ax1.set_ylabel('remaining useful life (RUL)', fontsize=14)
-                        ax1.set_title('Engine ID: '+str(engine_id[0]))
-                        ax1.legend(loc='lower left')
+                        if file_no == 1:
+                            ax1.plot(0, 0, 'og', markersize=8, label='fight conditions')
+                        elif file_no == 4:
+                            ax1.plot((x_test[:,1] + 1.98)*0.84/2.816, (x_test[:,0] + 1.734)*42/2.887, 'og', markersize=8, label='fight conditions')
+                        ax1.fill_between([0, 0.2, 0.4, 0.6, 0.8, 0.9], [0, 0, 0, 0, 10, 15], [17, 17, 40, 40, 40, 40], alpha=0.3, linewidth=0)
+                        ax1.set_xlabel('Mach number', fontsize=14)
+                        ax1.set_ylabel('flight altitude (kft)', fontsize=14)
+                        ax1.set_title('flight envelope')
+                        ax1.legend(loc='upper left')
+                        ax1.set_xlim([-0.2, 1.1])
+                        ax1.set_ylim([-10, 60])
                         ax1.grid(True)
 
-                        if file_no == 1:
-                            ax2.plot(0, 0, 'og', markersize=8, label='fight conditions')
-                        elif file_no == 4:
-                            ax2.plot((x_test[:,1] + 1.98)*0.84/2.816, (x_test[:,0] + 1.734)*42/2.887, 'og', markersize=8, label='fight conditions')
-                        ax2.fill_between([0, 0.2, 0.4, 0.6, 0.8, 0.9], [0, 0, 0, 0, 10, 15], [17, 17, 40, 40, 40, 40], alpha=0.3, linewidth=0)
-                        ax2.set_xlabel('Mach number', fontsize=14)
-                        ax2.set_ylabel('flight altitude (kft)', fontsize=14)
-                        ax2.set_title('flight envelope')
-                        ax2.legend(loc='upper left')
-                        plt.xlim([-0.1, 1])
-                        plt.ylim([-5, 50])
+                        ax2.plot(np.arange(1,len(trj_pred)+1, 1), trj_pred, 'bo',  label="prediction")
+                        ax2.plot(np.arange(1,len(trj_pred)+1, 1), trj_rul,  'k--', label="expected")
+                        ax2.set_xlabel('cycles', fontsize=14)
+                        ax2.set_ylabel('remaining useful life (RUL)', fontsize=14)
+                        ax2.set_title('Engine ID: '+str(engine_id[0])+', RMSE: '+f"{RMSE_cycle:3.1f}")
+                        ax2.legend(loc='lower left')
                         ax2.grid(True)
 
                         plt.savefig('rul.png')
+                        plt.show()
                         # plt.savefig('rul_e'+f"{itr + 1:03d}"+'.png')
 
                 error_list = np.array(error_list)
