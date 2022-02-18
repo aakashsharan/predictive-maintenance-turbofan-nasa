@@ -306,8 +306,8 @@ def CNNLSTM(dataset, file_no, Train=False, trj_wise=False, plot=False, file_test
                         ax1.set_ylabel('flight altitude (kft)', fontsize=14)
                         ax1.set_title('flight envelope')
                         ax1.legend(loc='upper left')
-                        ax1.set_xlim([-0.2, 1.1])
-                        ax1.set_ylim([-10, 60])
+                        ax1.set_xlim([-0.1, 1])
+                        ax1.set_ylim([-5, 50])
                         ax1.grid(True)
 
                         ax2.plot(np.arange(1,len(trj_pred)+1, 1), trj_pred, 'bo',  label="prediction")
@@ -334,35 +334,13 @@ def CNNLSTM(dataset, file_no, Train=False, trj_wise=False, plot=False, file_test
                 #     # plt.figure()
                 #     plt.plot(np.sort(error_list), 'o', color='red', label="error")
                 #     plt.legend()
-                #     plt.savefig('foo1.png')
                 #     # plt.show()
 
                 # fig, ax = plt.subplots()
                 # ax.stem(expected_list, linefmt='b-', label="expected")
                 # ax.stem(pred_list, linefmt='r-', label="predicted")
                 # plt.legend()
-                # plt.savefig('foo2.png')
                 # # plt.show()
-
-
-                # fig = plt.figure(figsize = (10, 10))
-                # plt.rc('font', size = 18)
-                # ax = fig.add_subplot()
-
-                # plt.scatter(expected_list, pred_list, alpha=0.7, s=100)
-                # plt.plot([0, 1000], [0, 1000],'k--')
-
-                # plt.xlabel('true RUL')
-                # plt.ylabel('predicted RUL')
-                # plt.title('RUL correlation (CNN+LSTM)')
-                # # plt.legend(loc = 'lower right')
-                # plt.xlim([0, 140])
-                # plt.ylim([0, 140])
-                # ax.set_aspect('equal', adjustable='box')
-                # plt.grid(True)
-                # # plt.savefig('lstm_data'+str(file_no)+'_'+f"{ep:02d}"+'.png')
-                # plt.savefig('foo.png')
-
             else:
                 x_validation = x_test
                 y_validation = y_test
