@@ -1,4 +1,9 @@
+import os
+import logging
+import matplotlib
+matplotlib.use('TkAgg')
 from matplotlib import pyplot as plt
+import numpy as np
 import pandas as pd
 import time
 import datetime
@@ -12,14 +17,14 @@ today = datetime.date.today()
 
 class CNNLSTMClass():
 
-    def __init__(self, dataset, file, file_test, Train=False, trj_wise=True, plot=True):
+    def __init__(self, dataset, file_test, Train=False, trj_wise=True, plot=True):
         self.dataset = "cmapss"
-        self.file = pd.DataFrame(test_data)
+        self.file_test = str(file_test)
+        logging.warning(str(file_test))
         self.file_no = int(list(file)[9])
-        self.file_test = int(list(file)[9])
+        
 
-
-    def CNNLSTM(self, dataset, file, file_no, file_test, Train, trj_wise, plot):
+    def CNNLSTM(dataset, file_no, file_test, Train, trj_wise, plot):
         '''
         The architecture is a Meny-to-meny model combining CNN and LSTM models
         :param dataset: select the specific dataset between PHM08 or CMAPSS
@@ -29,13 +34,13 @@ class CNNLSTMClass():
 
         #### checkpoint saving path ####
         if file_no == 1:
-            path_checkpoint = './Save/Save_CNNLSTM/CNNLSTM_ML130_GRAD1_kinkRUL_FD001/CNN1D_3_lstm_2_layers'
+            path_checkpoint = os.getcwd()+'/app/Save/Save_CNNLSTM/CNNLSTM_ML130_GRAD1_kinkRUL_FD001_seq200/CNN1D_3_lstm_2_layers'
         elif file_no == 2:
-            path_checkpoint = './Save/Save_CNNLSTM/CNNLSTM_ML130_GRAD1_kinkRUL_FD002/CNN1D_3_lstm_2_layers'
+            path_checkpoint = os.getcwd()+'/app/Save/Save_CNNLSTM/CNNLSTM_ML130_GRAD1_kinkRUL_FD002/CNN1D_3_lstm_2_layers'
         elif file_no == 3:
-            path_checkpoint = './Save/Save_CNNLSTM/CNNLSTM_ML130_GRAD1_kinkRUL_FD003/CNN1D_3_lstm_2_layers'
+            path_checkpoint = os.getcwd()+'/app/Save/Save_CNNLSTM/CNNLSTM_ML130_GRAD1_kinkRUL_FD003/CNN1D_3_lstm_2_layers'
         elif file_no == 4:
-            path_checkpoint = './Save/Save_CNNLSTM/CNNLSTM_ML130_GRAD1_kinkRUL_FD004/CNN1D_3_lstm_2_layers'
+            path_checkpoint = os.getcwd()+'/app/Save/Save_CNNLSTM/CNNLSTM_ML130_GRAD1_kinkRUL_FD004/CNN1D_3_lstm_2_layers'
         else:
             raise ValueError("Save path not defined")
         ##################################
@@ -67,7 +72,7 @@ class CNNLSTMClass():
         if Train == False: batch_size = 10
 
         # sequence_length = 100       # Number of steps
-        sequence_length = 100
+        sequence_length = 200
 
         learning_rate = 0.001       # 0.0001
 
@@ -80,7 +85,6 @@ class CNNLSTMClass():
 
         lstm_size = n_channels * 3      # 3 times the amount of channels
         num_layers = 2                  # 2  # Number of layers
-
 
 
         X = tf.placeholder(tf.float32, [None, sequence_length, n_channels], name='inputs')
@@ -132,7 +136,7 @@ class CNNLSTMClass():
         cost_function = tf.reduce_sum(tf.square(h))
         RMSE = tf.sqrt(tf.reduce_mean(tf.square(h)))
         optimizer = tf.train.AdamOptimizer(learning_rate_).minimize(cost_function)
-
+        
         saver = tf.train.Saver()
         training_generator = batch_generator(x_train, y_train, batch_size, sequence_length, online=True)
         testing_generator = batch_generator(x_test, y_test, batch_size, sequence_length, online=False)
@@ -179,7 +183,8 @@ class CNNLSTMClass():
 
                     # output checkpoint files
                     # if ep % 10 == 0 and ep != 0:
-                    if ep % 5 == 0 and ep != 0:
+                    # if ep % 5 == 0 and ep != 0:
+                    if ep % 1 == 0 and ep != 0:
                         save_path = saver.save(session, path_checkpoint)
                         if os.path.exists(path_checkpoint + '.meta'):
                             print("Model saved to file: %s" % path_checkpoint)
@@ -193,6 +198,7 @@ class CNNLSTMClass():
                     # added by Yoshi
                     #---------------
                     # if ep % 2 == 0 and ep != 0:
+                    logging.warning(str(test_engine_id))
                     if plot:
                         trj_iteration = len(test_engine_id.unique())
                         # print("total trajectories: ", trj_iteration)
@@ -257,8 +263,11 @@ class CNNLSTMClass():
                 print("---")
 
                 if trj_wise:
-                    trj_iteration = len(test_engine_id.unique())
-                    print("total trajectories: ", trj_iteration)
+                    trj_iteration = len(np.unique([test_engine_id]))
+                    logging.warning("trj_iteration: " + str(trj_iteration))
+                    # print("total trajectories: ", trj_iteration)
+                    # print("engine id: ", test_engine_id.unique())
+
                     error_list = []
                     pred_list = []
                     expected_list = []
@@ -270,6 +279,8 @@ class CNNLSTMClass():
 
                         __y_pred, error, __y = session.run([prediction, h, y_flat],
                                                         feed_dict={X: trj_x, Y: trj_y, keep_prob: 1.0})
+                        logging.warning('model __y_pred: ' + str(__y_pred))
+                        logging.warning('model __y: ' + str(__y))
 
                         RUL_predict, RUL_expected = get_predicted_expected_RUL(__y, __y_pred, lower_bound)
 
@@ -287,35 +298,58 @@ class CNNLSTMClass():
                         # create a plot
                         #---
                         if trj_iteration == 1:
-                            trj_end = np.argmax(__y == lower_bound) - 1
+                            trj_end = np.argmax(idx for idx in __y if idx >= lower_bound) - 1
+                            logging.warning("model trj_end: " + str(trj_end))
                             trj_pred = __y_pred[:trj_end]
+                            logging.warning("model __y_pred: " + str(__y_pred))
+                            logging.warning("model trj_pred: " + str(trj_pred))
                             trj_pred[trj_pred < 0] = 0
                             trj_rul = __y[:trj_end]
-                            engine_id = test_engine_id.unique()
+                            logging.warning("model trj_rul: " + str(trj_rul))
+                            engine_id = np.unique([test_engine_id])
 
-                            fig = plt.figure(figsize = (10, 10))
-                            plt.rc('font', size = 18)
-                            ax = fig.add_subplot()
+                            drul = np.array(trj_pred - trj_rul)
+                            logging.warning("drul: " + str(drul))
+                            drul = drul.ravel()
+                            RMSE_cycle = np.sqrt(np.sum(np.square(drul)) / len(drul))
+                            print("RMSE_cycles:", RMSE_cycle)
+                            print("score_cycles: ", scoring_func(RMSE_cycle))
 
-                            plt.plot(np.arange(1,len(trj_pred)+1, 1), trj_pred, 'bo',  label="prediction")
-                            plt.plot(np.arange(1,len(trj_pred)+1, 1), trj_rul,  'k--', label="expected")
-                            plt.xlabel('cycles')
-                            plt.ylabel('remaining useful life (RUL)')
-                            plt.title('Engine ID: '+str(engine_id[0]))
-                            # plt.title('Engine ID: '+str(itr + 1))
-                            plt.legend(loc = 'lower left')
-                            plt.grid(True)
+                            fig, (ax1, ax2) = plt.subplots(1, 2, figsize = (10, 5))
+                            plt.rc('font', size = 14)
+                            plt.rc('axes', titlesize=14)
+                            plt.rc('legend', fontsize=14)
+
+                            if file_no == 1:
+                                ax1.plot(0, 0, 'og', markersize=8, label='fight conditions')
+                            elif file_no == 4:
+                                ax1.plot((x_test[:,1] + 1.98)*0.84/2.816, (x_test[:,0] + 1.734)*42/2.887, 'og', markersize=8, label='fight conditions')
+                            ax1.fill_between([0, 0.2, 0.4, 0.6, 0.8, 0.9], [0, 0, 0, 0, 10, 15], [17, 17, 40, 40, 40, 40], alpha=0.3, linewidth=0)
+                            ax1.set_xlabel('Mach number', fontsize=14)
+                            ax1.set_ylabel('flight altitude (kft)', fontsize=14)
+                            ax1.set_title('flight envelope')
+                            ax1.legend(loc='upper left')
+                            ax1.set_xlim([-0.1, 1])
+                            ax1.set_ylim([-5, 50])
+                            ax1.grid(True)
+
+                            ax2.plot(np.arange(1,len(trj_pred)+1, 1), trj_pred, 'bo',  label="prediction")
+                            ax2.plot(np.arange(1,len(trj_pred)+1, 1), trj_rul,  'k--', label="expected")
+                            ax2.set_xlabel('cycles', fontsize=14)
+                            ax2.set_ylabel('remaining useful life (RUL)', fontsize=14)
+                            ax2.set_title('Engine ID: '+str(engine_id[0])+', RMSE: '+f"{RMSE_cycle:3.1f}")
+                            ax2.legend(loc='lower left')
+                            ax2.grid(True)
+
                             plt.savefig('rul.png')
+                            plt.show()
                             # plt.savefig('rul_e'+f"{itr + 1:03d}"+'.png')
-
-
 
                     error_list = np.array(error_list)
                     error_list = error_list.ravel()
                     rmse = np.sqrt(np.sum(np.square(error_list)) / len(error_list))  # RMSE
                     print(rmse, scoring_func(error_list))
 
-                    print("---")
                     # if plot:
                     #     plt.figure()
                     #     # plt.plot(expected_list, 'o', color='black', label="expected")
@@ -323,35 +357,13 @@ class CNNLSTMClass():
                     #     # plt.figure()
                     #     plt.plot(np.sort(error_list), 'o', color='red', label="error")
                     #     plt.legend()
-                    #     plt.savefig('foo1.png')
                     #     # plt.show()
 
                     # fig, ax = plt.subplots()
                     # ax.stem(expected_list, linefmt='b-', label="expected")
                     # ax.stem(pred_list, linefmt='r-', label="predicted")
                     # plt.legend()
-                    # plt.savefig('foo2.png')
                     # # plt.show()
-
-
-                    # fig = plt.figure(figsize = (10, 10))
-                    # plt.rc('font', size = 18)
-                    # ax = fig.add_subplot()
-
-                    # plt.scatter(expected_list, pred_list, alpha=0.7, s=100)
-                    # plt.plot([0, 1000], [0, 1000],'k--')
-
-                    # plt.xlabel('true RUL')
-                    # plt.ylabel('predicted RUL')
-                    # plt.title('RUL correlation (CNN+LSTM)')
-                    # # plt.legend(loc = 'lower right')
-                    # plt.xlim([0, 140])
-                    # plt.ylim([0, 140])
-                    # ax.set_aspect('equal', adjustable='box')
-                    # plt.grid(True)
-                    # # plt.savefig('lstm_data'+str(file_no)+'_'+f"{ep:02d}"+'.png')
-                    # plt.savefig('foo.png')
-
                 else:
                     x_validation = x_test
                     y_validation = y_test
@@ -376,6 +388,7 @@ class CNNLSTMClass():
                         full_prediction.append(__y_pred * RESCALE)
                         actual_rul.append(__y * RESCALE)
                         error_list.append(error * RESCALE)
+
                     full_prediction = np.array(full_prediction)
                     full_prediction = full_prediction.ravel()
                     actual_rul = np.array(actual_rul)
@@ -391,8 +404,9 @@ class CNNLSTMClass():
                         plt.legend()
                         plt.show()
 
+
     def run(self): 
-        self.CNNLSTM(dataset=self.dataset, file=self.file, file_no=self.file_no, file_test=self.file_test, Train=False, trj_wise=True, plot=True)
+        self.CNNLSTM(dataset=self.dataset, file_no=self.file_no, file_test=self.file_test, Train=False, trj_wise=True, plot=True)
         # response = 
         return response 
 

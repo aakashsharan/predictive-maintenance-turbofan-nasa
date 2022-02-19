@@ -1,4 +1,5 @@
 import os
+import logging
 import numpy as np
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
@@ -141,13 +142,16 @@ def trjectory_generator(x_train, y_train, test_engine_id, sequence_length, graph
     DEBUG = False
     num_x_sensors = x_train.shape[1]
     idx = 0
-    engine_ids = test_engine_id.unique()
+    engine_ids = np.unique([test_engine_id])
     if DEBUG: print("total trjectories: ", len(engine_ids))
 
     while True:
-        for id in engine_ids:
+        for id in [engine_ids]:
 
-            indexes = test_engine_id[test_engine_id == id].index
+            test_engine_id_list = np.array([test_engine_id])
+            # logging.warning("where is here: " + str(np.where(test_engine_id_list[test_engine_id == id])))
+            # indexes = test_engine_id_list[test_engine_id == id].index
+            indexes = [0]
             training_data = x_train[indexes]
             if DEBUG: print("engine_id: ", id, "start", indexes[0], "end", indexes[-1], "trjectory_len:", len(indexes))
             batch_size = int(training_data.shape[0] / sequence_length) + 1
@@ -297,8 +301,14 @@ def conv_layer(X,filters,kernel_size,strides,padding,batch_norm,is_train,scope):
 
 
 def get_predicted_expected_RUL(__y, __y_pred, lower_bound=-1):
-    trj_end = np.argmax(__y == lower_bound) - 1
+    logging.warning("utils __y: " + str(__y))
+    logging.warning(str(np.argmax(idx for idx in __y if idx >= -0.01) - 1))
+    # trj_end = np.argmax(__y == lower_bound) - 1
+    trj_end = np.argmax(idx for idx in __y if idx >= lower_bound) - 1
     trj_pred = __y_pred[:trj_end]
+    logging.warning("utils trj_end: " + str(trj_end))
+    logging.warning("utils __y_pred: " + str(__y_pred))
+    logging.warning("utils trj_pred: " + str(trj_pred))
     trj_pred[trj_pred < 0] = 0
     # if trj_pred[-1] < 0: print(trj_pred[-1])
     RUL_predict = round(trj_pred[-1], 0)

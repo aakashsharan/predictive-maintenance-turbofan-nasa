@@ -2,14 +2,16 @@
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
+import os
+import logging
 import pandas as pd
 from matplotlib import pyplot as plt
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 import random
 
+
 MAXLIFE = 130
-# MAXLIFE = 150
 
 SCALE = 1
 RESCALE = 1
@@ -21,7 +23,6 @@ training_engine_id = 0
 def kink_RUL(cycle_list, max_cycle):
     '''
     Piecewise linear function with zero gradient and unit gradient
-
             ^
             |
     MAXLIFE |-----------
@@ -61,9 +62,7 @@ def compute_rul_of_one_id(FD00X_of_one_id, max_cycle_rul=None):
         max_cycle = max(cycle_list)  # Failure cycle
     else:
         max_cycle = max(cycle_list) + max_cycle_rul
-        # print(max(cycle_list), max_cycle_rul)
 
-    # return kink_RUL(cycle_list,max_cycle)
     return kink_RUL(cycle_list, max_cycle)
 
 
@@ -87,7 +86,7 @@ def compute_rul_of_one_file(FD00X, id='engine_id', RUL_FD00X=None):
 
 
 def get_CMAPSSData(save=False, save_training_data=True, save_testing_data=True, files=[1, 2, 3, 4, 5],
-                   min_max_norm=False):
+                    file_test=None, min_max_norm=False):
     '''
     :param save: switch to load the already preprocessed data or begin preprocessing of raw data
     :param save_training_data: same functionality as 'save' but for training data only
@@ -98,8 +97,12 @@ def get_CMAPSSData(save=False, save_training_data=True, save_testing_data=True, 
     '''
 
     if save == False:
-        return np.load("normalized_train_data.npy"), np.load("normalized_test_data.npy"), pd.read_csv(
-            'normalized_train_data.csv', index_col=[0]), pd.read_csv('normalized_test_data.csv', index_col=[0])
+        normalized_train_data_npy = os.getcwd()+"/app/normalized_train_data.npy"
+        normalized_train_data_csv = os.getcwd()+"/app/normalized_train_data.csv"
+        normalized_test_data_npy = os.getcwd()+"/app/normalized_test_data.npy"
+        normalized_test_data_csv = os.getcwd()+"/app/normalized_test_data.csv"
+        return np.load(normalized_train_data_npy), np.load(normalized_test_data_npy), pd.read_csv(
+            normalized_train_data_csv, index_col=[0]), pd.read_csv(normalized_test_data_csv, index_col=[0])
 
     column_name = ['engine_id', 'cycle', 'setting1', 'setting2', 'setting3', 's1', 's2', 's3',
                    's4', 's5', 's6', 's7', 's8', 's9', 's10', 's11', 's12', 's13', 's14',
@@ -119,7 +122,6 @@ def get_CMAPSSData(save=False, save_training_data=True, save_testing_data=True, 
         previous_len = 0
         frames = []
         for data_file in ['train_FD00' + str(i) for i in files]:  # load subdataset by subdataset
-
             #### standard normalization ####
             mean = eval(data_file).iloc[:, 2:len(list(eval(data_file)))].mean()
             std = eval(data_file).iloc[:, 2:len(list(eval(data_file)))].std()
@@ -163,11 +165,17 @@ def get_CMAPSSData(save=False, save_training_data=True, save_testing_data=True, 
         train_values = train.values
 
     if save_testing_data:  ### testing ###
+        if file_test == None:
+            test_FD001 = pd.read_table("dataset/CMAPSSData/test_FD001.txt", header=None, delim_whitespace=True)
+            test_FD002 = pd.read_table("dataset/CMAPSSData/test_FD002.txt", header=None, delim_whitespace=True)
+            test_FD003 = pd.read_table("dataset/CMAPSSData/test_FD003.txt", header=None, delim_whitespace=True)
+            test_FD004 = pd.read_table("dataset/CMAPSSData/test_FD004.txt", header=None, delim_whitespace=True)
+        else:
+            test_FD001 = pd.read_table("dataset/demo/"+file_test, header=None, delim_whitespace=True)
+            test_FD002 = pd.read_table("dataset/demo/"+file_test, header=None, delim_whitespace=True)
+            test_FD003 = pd.read_table("dataset/demo/"+file_test, header=None, delim_whitespace=True)
+            test_FD004 = pd.read_table("dataset/demo/"+file_test, header=None, delim_whitespace=True)
 
-        test_FD001 = pd.read_table("dataset/CMAPSSData/test_FD001.txt", header=None, delim_whitespace=True)
-        test_FD002 = pd.read_table("dataset/CMAPSSData/test_FD002.txt", header=None, delim_whitespace=True)
-        test_FD003 = pd.read_table("dataset/CMAPSSData/test_FD003.txt", header=None, delim_whitespace=True)
-        test_FD004 = pd.read_table("dataset/CMAPSSData/test_FD004.txt", header=None, delim_whitespace=True)
         test_FD001.columns = column_name
         test_FD002.columns = column_name
         test_FD003.columns = column_name
@@ -177,7 +185,7 @@ def get_CMAPSSData(save=False, save_training_data=True, save_testing_data=True, 
         RUL_FD001 = pd.read_table("dataset/CMAPSSData/RUL_FD001.txt", header=None, delim_whitespace=True)
         RUL_FD002 = pd.read_table("dataset/CMAPSSData/RUL_FD002.txt", header=None, delim_whitespace=True)
         RUL_FD003 = pd.read_table("dataset/CMAPSSData/RUL_FD003.txt", header=None, delim_whitespace=True)
-        RUL_FD004 = pd.read_table("dataset/CMAPSSData/RUL_FD004.txt", header=None, delim_whitespace=True)
+        RUL_FD004 = pd.read_table(".ataset/CMAPSSData/RUL_FD004.txt", header=None, delim_whitespace=True)
         RUL_FD001.columns = ['RUL']
         RUL_FD002.columns = ['RUL']
         RUL_FD003.columns = ['RUL']
@@ -203,12 +211,31 @@ def get_CMAPSSData(save=False, save_training_data=True, save_testing_data=True, 
             eval(data_file).index = range(previous_len, previous_len + current_len)
             previous_len = previous_len + current_len
             frames.append(eval(data_file))
-            print(data_file)
+
+            if file_test == None:
+                print(data_file)
+            else:
+                print(file_test)
+
             if len(files) == 1:
                 global test_engine_id
+                logging.warning(str(eval(data_file)))
                 test_engine_id = eval(data_file)['engine_id']
 
         test = pd.concat(frames)
+
+        # # added by Yoshi
+        # test = test.loc[test['engine_id'] == engine_id]
+        # # test = test.drop(test[test.engine_id != enginID].index)
+        # test = test.reset_index(drop = True)
+        # if len(files) == 1:
+        #     # global test_engine_id
+        #     test_engine_id = test['engine_id']
+
+        # print("---")
+        # print(file_test)
+        # print(test.info())
+
         test = test.drop('engine_id', 1)
         test = test.drop('cycle', 1)
         # if files[0] == 1 or files[0] == 3:
@@ -230,19 +257,18 @@ def get_CMAPSSData(save=False, save_training_data=True, save_testing_data=True, 
 def get_PHM08Data(save=False):
     """
     Function is to load PHM 2008 challenge dataset
-
     """
 
     if save == False:
-        return np.load("./PHM08/processed_data/phm_training_data.npy"), np.load("./PHM08/processed_data/phm_testing_data.npy"), np.load(
-            "./PHM08/processed_data/phm_original_testing_data.npy")
+        return np.load("PHM08/processed_data/phm_training_data.npy"), np.load("PHM08/processed_data/phm_testing_data.npy"), np.load(
+            "PHM08/processed_data/phm_original_testing_data.npy")
 
     column_name = ['engine_id', 'cycle', 'setting1', 'setting2', 'setting3', 's1', 's2', 's3',
                    's4', 's5', 's6', 's7', 's8', 's9', 's10', 's11', 's12', 's13', 's14',
                    's15', 's16', 's17', 's18', 's19', 's20', 's21']
-    phm_training_data = pd.read_table("./PHM08/train.txt", header=None, delim_whitespace=True)
+    phm_training_data = pd.read_table("PHM08/train.txt", header=None, delim_whitespace=True)
     phm_training_data.columns = column_name
-    phm_testing_data = pd.read_table("./PHM08/final_test.txt", header=None, delim_whitespace=True)
+    phm_testing_data = pd.read_table("PHM08/final_test.txt", header=None, delim_whitespace=True)
     phm_testing_data.columns = column_name
 
     print("phm training")
@@ -295,12 +321,12 @@ def get_PHM08Data(save=False):
 
     print(phm_training_data.shape, phm_testing_data.shape, training_data.shape, testing_data.shape)
 
-    np.save("./PHM08/processed_data/phm_training_data.npy", training_data)
-    np.savetxt("./PHM08/processed_data/phm_training_data.txt", training_data, delimiter=" ")
-    np.save("./PHM08/processed_data/phm_testing_data.npy", testing_data)
-    np.savetxt("./PHM08/processed_data/phm_testing_data.txt", testing_data, delimiter=" ")
-    np.save("./PHM08/processed_data/phm_original_testing_data.npy", phm_testing_data)
-    np.savetxt("./PHM08/processed_data/phm_original_testing_data.csv", phm_testing_data, delimiter=",")
+    np.save("PHM08/processed_data/phm_training_data.npy", training_data)
+    np.savetxt("PHM08/processed_data/phm_training_data.txt", training_data, delimiter=" ")
+    np.save("PHM08/processed_data/phm_testing_data.npy", testing_data)
+    np.savetxt("PHM08/processed_data/phm_testing_data.txt", testing_data, delimiter=" ")
+    np.save("PHM08/processed_data/phm_original_testing_data.npy", phm_testing_data)
+    np.savetxt("PHM08/processed_data/phm_original_testing_data.csv", phm_testing_data, delimiter=",")
 
     return training_data, testing_data, phm_testing_data
 
@@ -310,7 +336,6 @@ def data_augmentation(files=1, low=[10, 40, 90, 170], high=[35, 85, 160, 250], p
     This helper function only augments the training data to look like testing data.
     Training data always run to a failure. But testing data is mostly stop before a failure.
     Therefore, training data augmented to have scenarios without failure
-
     :param files: select wich sub CMPASS dataset
     :param low: lower bound for the random selection of the engine cycle
     :param high: upper bound for the random selection of the engine cycle
@@ -326,7 +351,7 @@ def data_augmentation(files=1, low=[10, 40, 90, 170], high=[35, 85, 160, 250], p
 
     ### Loading original data ###
     if files == "phm":
-        train_FD00x = pd.read_table("./PHM08/processed_data/phm_training_data.txt", header=None, delim_whitespace=True)
+        train_FD00x = pd.read_table("PHM08/processed_data/phm_training_data.txt", header=None, delim_whitespace=True)
         train_FD00x.drop(train_FD00x.columns[len(train_FD00x.columns) - 1], axis=1, inplace=True)
         train_FD00x.columns = column_name
     else:
@@ -459,7 +484,7 @@ def data_augmentation(files=1, low=[10, 40, 90, 170], high=[35, 85, 160, 250], p
         plt.show()
 
 
-def analyse_Data(dataset, files=None, plot=True, min_max=False):
+def analyse_Data(dataset, files=None, file_test=None, plot=True, min_max=False):
     '''
     Generate pre-processed data according to the given dataset
     :param dataset: choose between "phm" for PHM 2008 dataset or "cmapss" for CMAPSS data set with file number
@@ -497,7 +522,7 @@ def analyse_Data(dataset, files=None, plot=True, min_max=False):
             plt.show()
 
     elif dataset == "cmapss":
-        training_data, testing_data, training_pd, testing_pd = get_CMAPSSData(save=True, files=files,
+        training_data, testing_data, training_pd, testing_pd = get_CMAPSSData(save=True, files=files, file_test=file_test,
                                                                               min_max_norm=min_max)
         x_train = training_data[:, :training_data.shape[1] - 1]
         y_train = training_data[:, training_data.shape[1] - 1]
