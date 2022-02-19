@@ -1,0 +1,2 @@
+model_checkpoint_path: "CNN1D_3_lstm_2_layers"
+all_model_checkpoint_paths: "CNN1D_3_lstm_2_layers"
