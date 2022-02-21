@@ -22,7 +22,8 @@ class CNNLSTMClass():
         self.file_test = str(file_test)
         self.example_engines_df = pd.DataFrame(file_test)
         self.file_no = int(list(file)[9])
-        self.test_engine_id = np.unique(self.example_engines_df['unit_nr'])
+        self.test_engine_id = self.example_engines_df['unit_nr']
+        logging.warning("model test_engine_id1: " + str(test_engine_id))
 
     def CNNLSTM(dataset, test_engine_id, example_engines_df, file_no, file_test, Train=False, trj_wise=False, plot=True):
         '''
@@ -31,6 +32,7 @@ class CNNLSTMClass():
         :param Train: select between training and testing
         :param trj_wise: Trajectorywise calculate RMSE and scores
         '''
+        logging.warning("example_engines_df: " + str(example_engines_df))
         #### checkpoint saving path ####
         if file_no == 1:
             path_checkpoint = os.getcwd()+'/app/Save/Save_CNNLSTM/CNNLSTM_ML130_GRAD1_kinkRUL_FD001_seq200/CNN1D_3_lstm_2_layers'
@@ -39,14 +41,16 @@ class CNNLSTMClass():
         elif file_no == 3:
             path_checkpoint = os.getcwd()+'/app/Save/Save_CNNLSTM/CNNLSTM_ML130_GRAD1_kinkRUL_FD003/CNN1D_3_lstm_2_layers'
         elif file_no == 4:
-            path_checkpoint = os.getcwd()+'/app/Save/Save_CNNLSTM/CNNLSTM_ML130_GRAD1_kinkRUL_FD004/CNN1D_3_lstm_2_layers'
+            path_checkpoint = os.getcwd()+'/app/Save/Save_CNNLSTM/CNNLSTM_ML130_GRAD1_kinkRUL_FD004(seq_len200)/CNN1D_3_lstm_2_layers'
         else:
             raise ValueError("Save path not defined")
         ##################################
 
 
         if dataset == "cmapss":
-            training_data, testing_data, training_pd, testing_pd = get_CMAPSSData(save=False, file_test=file_test, test_engine_id=test_engine_id)
+            training_data, testing_data, training_pd, testing_pd = get_CMAPSSData(save=False, file_test=file_test)
+            logging.warning("training_data.shape: " + str(training_data.shape))
+            logging.warning("testing_data.shape: " + str(testing_data.shape))
             x_train = training_data[:, :training_data.shape[1] - 1]
             y_train = training_data[:, training_data.shape[1] - 1]
             print("training data CNN-LSTM: ", x_train.shape, y_train.shape)
@@ -198,10 +202,7 @@ class CNNLSTMClass():
                     #---------------
                     # if ep % 2 == 0 and ep != 0:
                     if plot:
-                        logging.warning("works here")
                         trj_iteration = len(test_engine_id.unique())
-                        logging.warning("model trj_iteration1: " + str(trj_iteration))
-                        logging.warning("model test_engine_id: " + str(test_engine_id))
                         # print("total trajectories: ", trj_iteration)
                         error_list = []
                         pred_list = []
@@ -239,7 +240,7 @@ class CNNLSTMClass():
                         plt.ylim([0, 140])
                         ax.set_aspect('equal', adjustable='box')
                         plt.grid(True)
-                        plt.savefig(os.getcwd()+'/app/static/images/lstm_data'+str(file_no)+'_'+f"{ep:02d}"+'.png')
+                        plt.savefig('lstm_data'+str(file_no)+'_'+f"{ep:02d}"+'.png')
                         # plt.show()
                     #---------------
 
@@ -254,7 +255,7 @@ class CNNLSTMClass():
                 plt.plot(cost)
                 plt.xlabel('iterations')
                 plt.ylabel('cost')
-                plt.savefig(os.getcwd()+'/app/static/images/lstm_data'+str(file_no)+'_cost.png')
+                plt.savefig('lstm_data'+str(file_no)+'_cost.png')
                 # plt.show()
 
             else:
@@ -264,18 +265,19 @@ class CNNLSTMClass():
                 print("---")
 
                 if trj_wise:
-                    trj_iteration = len(np.unique(test_engine_id))
-                    logging.warning("model trj_iteration2: " + str(trj_iteration))
+                    trj_iteration = len(test_engine_id.unique())
                     # print("total trajectories: ", trj_iteration)
-                    # print("engine id: ", test_engine_id
+                    # print("engine id: ", test_engine_id.unique())
 
                     error_list = []
                     pred_list = []
                     expected_list = []
                     lower_bound = -0.01
+                    logging.warning("x_test.shape: " + str(x_test.shape))
+                    logging.warning("y_test.shape: " + str(y_test.shape))
+                    logging.warning("test_engine_id.shape: " + str(test_engine_id.shape))
                     test_trjectory_generator = trjectory_generator(x_test, y_test, test_engine_id, sequence_length,
                                                                 batch_size, lower_bound)
-                    logging.warning("test_trjectory_generator: " + str(test_trjectory_generator))
                     for itr in range(trj_iteration):
                         trj_x, trj_y = next(test_trjectory_generator)
 
@@ -288,65 +290,57 @@ class CNNLSTMClass():
                         pred_list.append(RUL_predict)
                         expected_list.append(RUL_expected)
 
-                        logging.warning("works here 2")
-
                         print("id: ", itr + 1, "expected: ", RUL_expected, "\t", "predict: ", RUL_predict, "\t", "error: ",
                             RUL_predict - RUL_expected)
                         # plt.plot(__y_pred* RESCALE, label="prediction")
                         # plt.plot(__y* RESCALE, label="expected")
-                        # plt.savefig(os.getcwd() + '/app/static/images/test.png')
                         # plt.show()
 
                         #---
                         # create a plot
                         #---
-                        # if trj_iteration == 1:
-                        trj_end = np.argmax(__y == lower_bound) - 1
-                        logging.warning("model __y: " + str(__y))
-                        trj_pred = __y_pred[:trj_end]
-                        logging.warning("model __y_pred: " + str(__y_pred))
-                        logging.warning("model trj_pred: " + str(trj_pred))
-                        trj_pred[trj_pred < 0] = 0
-                        trj_rul = __y[:trj_end]
-                        logging.warning("model trj_rul: " + str(trj_rul))
-                        logging.warning("model trj_end: " + str(trj_end))
-                        engine_id = np.unique(test_engine_id)
+                        if trj_iteration == 1:
+                            trj_end = np.argmax(__y == lower_bound) - 1
+                            trj_pred = __y_pred[:trj_end]
+                            trj_pred[trj_pred < 0] = 0
+                            trj_rul = __y[:trj_end]
+                            engine_id = test_engine_id.unique()
 
-                        drul = np.array(trj_pred - trj_rul)
-                        drul = drul.ravel()
-                        RMSE_cycle = np.sqrt(np.sum(np.square(drul)) / len(drul))
-                        print("RMSE_cycles:", RMSE_cycle)
-                        print("score_cycles: ", scoring_func(RMSE_cycle))
+                            drul = np.array(trj_pred - trj_rul)
+                            drul = drul.ravel()
+                            RMSE_cycle = np.sqrt(np.sum(np.square(drul)) / len(drul))
+                            print("RMSE_cycles:", RMSE_cycle)
+                            print("score_cycles: ", scoring_func(RMSE_cycle))
 
-                        fig, (ax1, ax2) = plt.subplots(1, 2, figsize = (10, 5))
-                        plt.rc('font', size = 14)
-                        plt.rc('axes', titlesize=14)
-                        plt.rc('legend', fontsize=14)
+                            fig, (ax1, ax2) = plt.subplots(1, 2, figsize = (10, 5))
+                            plt.rc('font', size = 14)
+                            plt.rc('axes', titlesize=14)
+                            plt.rc('legend', fontsize=14)
 
-                        if file_no == 1:
-                            ax1.plot(0, 0, 'og', markersize=8, label='fight conditions')
-                        elif file_no == 4:
-                            ax1.plot((x_test[:,1] + 1.98)*0.84/2.816, (x_test[:,0] + 1.734)*42/2.887, 'og', markersize=8, label='fight conditions')
-                        ax1.fill_between([0, 0.2, 0.4, 0.6, 0.8, 0.9], [0, 0, 0, 0, 10, 15], [17, 17, 40, 40, 40, 40], alpha=0.3, linewidth=0)
-                        ax1.set_xlabel('Mach number', fontsize=14)
-                        ax1.set_ylabel('flight altitude (kft)', fontsize=14)
-                        ax1.set_title('flight envelope')
-                        ax1.legend(loc='upper left')
-                        ax1.set_xlim([-0.1, 1])
-                        ax1.set_ylim([-5, 50])
-                        ax1.grid(True)
+                            if file_no == 1:
+                                ax1.plot(0, 0, 'og', markersize=8, label='fight conditions')
+                            elif file_no == 4:
+                                ax1.plot((x_test[:,1] + 1.98)*0.84/2.816, (x_test[:,0] + 1.734)*42/2.887, 'og', markersize=8, label='fight conditions')
+                            ax1.fill_between([0, 0.2, 0.4, 0.6, 0.8, 0.9], [0, 0, 0, 0, 10, 15], [17, 17, 40, 40, 40, 40], alpha=0.3, linewidth=0)
+                            ax1.set_xlabel('Mach number', fontsize=14)
+                            ax1.set_ylabel('flight altitude (kft)', fontsize=14)
+                            ax1.set_title('flight envelope')
+                            ax1.legend(loc='upper left')
+                            ax1.set_xlim([-0.1, 1])
+                            ax1.set_ylim([-5, 50])
+                            ax1.grid(True)
 
-                        ax2.plot(np.arange(1,len(trj_pred)+1, 1), trj_pred, 'bo',  label="prediction")
-                        ax2.plot(np.arange(1,len(trj_pred)+1, 1), trj_rul,  'k--', label="expected")
-                        ax2.set_xlabel('cycles', fontsize=14)
-                        ax2.set_ylabel('remaining useful life (RUL)', fontsize=14)
-                        ax2.set_title('Engine ID: '+str(engine_id[0])+', RMSE: '+f"{RMSE_cycle:3.1f}")
-                        ax2.legend(loc='lower left')
-                        ax2.grid(True)
+                            ax2.plot(np.arange(1,len(trj_pred)+1, 1), trj_pred, 'bo',  label="prediction")
+                            ax2.plot(np.arange(1,len(trj_pred)+1, 1), trj_rul,  'k--', label="expected")
+                            ax2.set_xlabel('cycles', fontsize=14)
+                            ax2.set_ylabel('remaining useful life (RUL)', fontsize=14)
+                            ax2.set_title('Engine ID: '+str(engine_id[0])+', RMSE: '+f"{RMSE_cycle:3.1f}")
+                            ax2.legend(loc='lower left')
+                            ax2.grid(True)
 
-                        plt.savefig(os.getcwd() + '/app/static/images/_rul.png')
-                        plt.show()
-                        # plt.savefig('rul_e'+f"{itr + 1:03d}"+'.png')
+                            plt.savefig(os.getcwd()+"/app/static/images/rul.png")
+                            plt.show()
+                            # plt.savefig('rul_e'+f"{itr + 1:03d}"+'.png')
 
                     error_list = np.array(error_list)
                     error_list = error_list.ravel()
@@ -402,7 +396,6 @@ class CNNLSTMClass():
 
                     print(y_validation.shape, full_prediction.shape, "RMSE:", rmse, "Score:", scoring_func(error_list))
                     if plot:
-                        logging.warning("plot is true")
                         plt.plot(full_prediction, label="prediction")
                         plt.plot(actual_rul, label="expected")
                         plt.legend()

@@ -1,0 +1,10 @@
+venv/
+RUL-Net/Save/
+RUL-Net/dataset/
+app/__pycache__/
+Save2/
+app/dataset/
+*.txt
+*.npy
+*.csv
+*.png

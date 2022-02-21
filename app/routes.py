@@ -24,7 +24,7 @@ def home():
             file_test = file.filename
             example_engines_df = pd.read_csv(request.files.get('file'), sep='\s+', header=None, 
                     names=col_names)
-            test_engine_id = np.unique(example_engines_df['unit_nr'])
+            test_engine_id = example_engines_df['unit_nr']
             file_no = int(list(file_test)[9])
             flash("Done!")
 

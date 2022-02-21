@@ -1,5 +1,4 @@
 import os
-import logging
 import numpy as np
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
@@ -141,16 +140,13 @@ def trjectory_generator(x_train, y_train, test_engine_id, sequence_length, graph
     DEBUG = False
     num_x_sensors = x_train.shape[1]
     idx = 0
-    engine_ids = np.unique(test_engine_id)
-    logging.warning("utils test_engine_id: " + str(test_engine_id))
-    logging.warning("utils engine_ids: " + str(engine_ids))
+    engine_ids = test_engine_id.unique()
     if DEBUG: print("total trjectories: ", len(engine_ids))
 
     while True:
         for id in engine_ids:
 
-            # indexes = test_engine_id[test_engine_id == id].index
-            indexes = [list(test_engine_id).index(id) for id in engine_ids]
+            indexes = test_engine_id[test_engine_id == id].index
             training_data = x_train[indexes]
             if DEBUG: print("engine_id: ", id, "start", indexes[0], "end", indexes[-1], "trjectory_len:", len(indexes))
             batch_size = int(training_data.shape[0] / sequence_length) + 1
