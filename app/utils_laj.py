@@ -140,7 +140,7 @@ def trjectory_generator(x_train, y_train, test_engine_id, sequence_length, graph
     DEBUG = False
     num_x_sensors = x_train.shape[1]
     idx = 0
-    engine_ids = test_engine_id.unique()
+    engine_ids = np.unique(test_engine_id)
     if DEBUG: print("total trjectories: ", len(engine_ids))
 
     while True:

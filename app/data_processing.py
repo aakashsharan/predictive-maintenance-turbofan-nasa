@@ -3,6 +3,7 @@ import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 import os
+import logging
 import pandas as pd
 from matplotlib import pyplot as plt
 import numpy as np
@@ -11,10 +12,12 @@ import random
 
 MAXLIFE = 130
 
+
+
 SCALE = 1
 RESCALE = 1
 true_rul = []
-test_engine_id = 0
+# test_engine_id = []
 training_engine_id = 0
 
 normalized_train_data_npy_path = os.getcwd()+"/app/normalized_train_data.npy"
@@ -88,7 +91,7 @@ def compute_rul_of_one_file(FD00X, id='engine_id', RUL_FD00X=None):
         return rul
 
 
-def get_CMAPSSData(save=False, save_training_data=True, save_testing_data=True, files=[1, 2, 3, 4, 5],
+def get_CMAPSSData(save=False, save_training_data=True, save_testing_data=True, files=[1, 2, 3, 4],
                     file_test=None, min_max_norm=False):
     '''
     :param save: switch to load the already preprocessed data or begin preprocessing of raw data
@@ -98,17 +101,19 @@ def get_CMAPSSData(save=False, save_training_data=True, save_testing_data=True, 
     :param min_max_norm: switch to enable min-max normalization
     :return: function will save the preprocessed training and testing data as numpy objects
     '''
-
-    if save == False:
-        return np.load(normalized_train_data_npy_path), np.load(normalized_test_data_npy_path), pd.read_csv(
-            normalized_train_data_csv_path, index_col=[0]), pd.read_csv(normalized_test_data_csv_path, index_col=[0])
+    logging.warning("data file_test: " + str(file_test))
+    # if save == False:
+    #     logging.warning("save == False")
+    #     return np.load(normalized_train_data_npy_path), np.load(normalized_test_data_npy_path), pd.read_csv(
+    #         normalized_train_data_csv_path, index_col=[0]), pd.read_csv(normalized_test_data_csv_path, index_col=[0])
 
     column_name = ['engine_id', 'cycle', 'setting1', 'setting2', 'setting3', 's1', 's2', 's3',
                    's4', 's5', 's6', 's7', 's8', 's9', 's10', 's11', 's12', 's13', 's14',
                    's15', 's16', 's17', 's18', 's19', 's20', 's21']
+    logging.warning("aaaaaaaaaa")
 
     if save_training_data:  ### Training ###
-
+        logging.warning("save_training_data is true")
         train_FD001 = pd.read_table(os.getcwd()+"/app/dataset/CMAPSSData/train_FD001.txt", header=None, delim_whitespace=True)
         train_FD002 = pd.read_table(os.getcwd()+"/app/dataset/CMAPSSData/train_FD002.txt", header=None, delim_whitespace=True)
         train_FD003 = pd.read_table(os.getcwd()+"/app/dataset/CMAPSSData/train_FD003.txt", header=None, delim_whitespace=True)
@@ -162,15 +167,19 @@ def get_CMAPSSData(save=False, save_training_data=True, save_testing_data=True, 
     else:
         train = pd.read_csv(normalized_train_data_csv_path, index_col=[0])
         train_values = train.values
-
+    logging.warning("---------------------------------------------------------------------")
+    logging.warning("works here--------------------")
     if save_testing_data:  ### testing ###
         if file_test == None:
+            logging.warning("True")
             test_FD001 = pd.read_table(os.getcwd()+"/app/dataset/CMAPSSData/test_FD001.txt", header=None, delim_whitespace=True)
             test_FD002 = pd.read_table(os.getcwd()+"/app/dataset/CMAPSSData/test_FD002.txt", header=None, delim_whitespace=True)
             test_FD003 = pd.read_table(os.getcwd()+"/app/dataset/CMAPSSData/test_FD003.txt", header=None, delim_whitespace=True)
             test_FD004 = pd.read_table(os.getcwd()+"/app/dataset/CMAPSSData/test_FD004.txt", header=None, delim_whitespace=True)
         else:
+            logging.warning("False")
             test_FD001 = pd.read_table(os.getcwd()+"/app/dataset/demo/"+file_test, header=None, delim_whitespace=True)
+            logging.warning("test_FD001: " + str(test_FD001.shape))
             test_FD002 = pd.read_table(os.getcwd()+"/app/dataset/demo/"+file_test, header=None, delim_whitespace=True)
             test_FD003 = pd.read_table(os.getcwd()+"/app/dataset/demo/"+file_test, header=None, delim_whitespace=True)
             test_FD004 = pd.read_table(os.getcwd()+"/app/dataset/demo/"+file_test, header=None, delim_whitespace=True)
@@ -217,7 +226,7 @@ def get_CMAPSSData(save=False, save_training_data=True, save_testing_data=True, 
                 print(file_test)
 
             if len(files) == 1:
-                global test_engine_id
+                # global test_engine_id
                 test_engine_id = eval(data_file)['engine_id']
 
         test = pd.concat(frames)
@@ -249,7 +258,7 @@ def get_CMAPSSData(save=False, save_training_data=True, save_testing_data=True, 
         test = pd.read_csv(normalized_test_data_csv_path, index_col=[0])
         test_values = test.values
 
-    return train_values, test_values, train, test
+    return train_values, test_values, train, test, test_engine_id
 
 
 def get_PHM08Data(save=False):

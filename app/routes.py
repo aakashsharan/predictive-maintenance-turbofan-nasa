@@ -2,8 +2,9 @@ import numpy as np
 import pandas as pd
 import logging
 import re
+import os 
 from flask import Flask
-from flask import Flask, Response, request, jsonify, render_template, flash
+from flask import Flask, Response, request, jsonify, render_template, flash, send_file
 from file_read_backwards import FileReadBackwards
 
 from app import app
@@ -22,17 +23,26 @@ def home():
             col_names = index_names + setting_names + sensor_names
             file = request.files.get('file')
             file_test = file.filename
+            logging.warning("routes file_test: " + str(file_test))
             example_engines_df = pd.read_csv(request.files.get('file'), sep='\s+', header=None, 
                     names=col_names)
-            test_engine_id = example_engines_df['unit_nr']
+            # test_engine_id = example_engines_df['unit_nr']
+            logging.warning("test_engine_id.shape: " + str(test_engine_id.shape))
             file_no = int(list(file_test)[9])
+            logging.warning("file_no: " + str(file_no))
             flash("Done!")
 
-        report = CNNLSTMClass.CNNLSTM(dataset="cmapss", test_engine_id=test_engine_id, example_engines_df= example_engines_df, file_test=file_test, file_no=file_no, Train=False, trj_wise=True, plot=True)
+        report = CNNLSTMClass.CNNLSTM(dataset="cmapss", file_no=file_no, file_test=file_test, Train=False, trj_wise=True, plot=True)
 
         # response = report.run()
 
     return render_template('data_upload.html', form=form, title='Turbofan Engine Analysis: Predictive Maintenance')
+
+@app.route('/download')
+def downloadFile ():
+    #For windows you need to use drive name [ex: F:/Example.pdf]
+    path = os.getcwd()+"/app/static/images/rul.png"
+    return send_file(path, as_attachment=True)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)

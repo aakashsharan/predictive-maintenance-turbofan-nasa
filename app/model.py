@@ -12,27 +12,22 @@ import sys
 from app import app
 from app.utils_laj import *
 from app.data_processing import get_CMAPSSData, get_PHM08Data, data_augmentation, analyse_Data, RESCALE
-
 today = datetime.date.today()
 
 class CNNLSTMClass():
 
-    def __init__(self, example_engines_df, dataset, file_test, Train=False, trj_wise=True, plot=True):
+    def __init__(self, dataset, file_test, Train=False, trj_wise=True, plot=True):
         self.dataset = "cmapss"
         self.file_test = str(file_test)
-        self.example_engines_df = pd.DataFrame(file_test)
         self.file_no = int(list(file)[9])
-        self.test_engine_id = self.example_engines_df['unit_nr']
-        logging.warning("model test_engine_id1: " + str(test_engine_id))
 
-    def CNNLSTM(dataset, test_engine_id, example_engines_df, file_no, file_test, Train=False, trj_wise=False, plot=True):
+    def CNNLSTM(dataset, file_no, file_test, Train=False, trj_wise=False, plot=True):
         '''
         The architecture is a Meny-to-meny model combining CNN and LSTM models
         :param dataset: select the specific dataset between PHM08 or CMAPSS
         :param Train: select between training and testing
         :param trj_wise: Trajectorywise calculate RMSE and scores
         '''
-        logging.warning("example_engines_df: " + str(example_engines_df))
         #### checkpoint saving path ####
         if file_no == 1:
             path_checkpoint = os.getcwd()+'/app/Save/Save_CNNLSTM/CNNLSTM_ML130_GRAD1_kinkRUL_FD001_seq200/CNN1D_3_lstm_2_layers'
@@ -41,14 +36,14 @@ class CNNLSTMClass():
         elif file_no == 3:
             path_checkpoint = os.getcwd()+'/app/Save/Save_CNNLSTM/CNNLSTM_ML130_GRAD1_kinkRUL_FD003/CNN1D_3_lstm_2_layers'
         elif file_no == 4:
-            path_checkpoint = os.getcwd()+'/app/Save/Save_CNNLSTM/CNNLSTM_ML130_GRAD1_kinkRUL_FD004(seq_len200)/CNN1D_3_lstm_2_layers'
+            path_checkpoint = os.getcwd()+'/app/Save/Save_CNNLSTM/CNNLSTM_ML130_GRAD1_kinkRUL_FD004_seq200/CNN1D_3_lstm_2_layers'
         else:
             raise ValueError("Save path not defined")
         ##################################
 
-
+        logging.warning("model file_test: " + str(file_test))
         if dataset == "cmapss":
-            training_data, testing_data, training_pd, testing_pd = get_CMAPSSData(save=False, file_test=file_test)
+            training_data, testing_data, training_pd, testing_pd, test_engine_id = get_CMAPSSData(save=False, file_test=file_test, files=[file_no])
             logging.warning("training_data.shape: " + str(training_data.shape))
             logging.warning("testing_data.shape: " + str(testing_data.shape))
             x_train = training_data[:, :training_data.shape[1] - 1]
@@ -202,7 +197,7 @@ class CNNLSTMClass():
                     #---------------
                     # if ep % 2 == 0 and ep != 0:
                     if plot:
-                        trj_iteration = len(test_engine_id.unique())
+                        trj_iteration = len(np.unique(test_engine_id))
                         # print("total trajectories: ", trj_iteration)
                         error_list = []
                         pred_list = []
@@ -265,7 +260,7 @@ class CNNLSTMClass():
                 print("---")
 
                 if trj_wise:
-                    trj_iteration = len(test_engine_id.unique())
+                    trj_iteration = len(np.unique(test_engine_id))
                     # print("total trajectories: ", trj_iteration)
                     # print("engine id: ", test_engine_id.unique())
 
@@ -273,9 +268,10 @@ class CNNLSTMClass():
                     pred_list = []
                     expected_list = []
                     lower_bound = -0.01
-                    logging.warning("x_test.shape: " + str(x_test.shape))
-                    logging.warning("y_test.shape: " + str(y_test.shape))
-                    logging.warning("test_engine_id.shape: " + str(test_engine_id.shape))
+                    logging.warning("model x_test.shape: " + str(x_test.shape))
+                    logging.warning("model y_test.shape: " + str(y_test.shape))
+                    logging.warning("model test_engine_id: " + str(test_engine_id))
+                    logging.warning("model len(test_engine_id): " + str(len(test_engine_id)))
                     test_trjectory_generator = trjectory_generator(x_test, y_test, test_engine_id, sequence_length,
                                                                 batch_size, lower_bound)
                     for itr in range(trj_iteration):
@@ -304,7 +300,7 @@ class CNNLSTMClass():
                             trj_pred = __y_pred[:trj_end]
                             trj_pred[trj_pred < 0] = 0
                             trj_rul = __y[:trj_end]
-                            engine_id = test_engine_id.unique()
+                            engine_id = np.unique(test_engine_id)
 
                             drul = np.array(trj_pred - trj_rul)
                             drul = drul.ravel()
@@ -402,10 +398,11 @@ class CNNLSTMClass():
                         plt.show()
 
 
-    # def run(self): 
-    #     self.CNNLSTM(dataset=self.dataset, test_engine_id=self.test_engine_id, file_no=self.file_no, file_test=self.file_test, Train=False, trj_wise=True, plot=True)
-    #     # response = 
-    #     return response 
+    def run(self): 
+        # analyse_Data(dataset=dataset, files=[file], file_test=FILE_TEST, plot=False, min_max=False)
+        self.CNNLSTM(dataset=self.dataset, file_no=self.file_no, file_test=self.file_test, Train=False, trj_wise=True, plot=True)
+        # response = 
+        # return response 
 
 # if __name__ == "__main__":
 
