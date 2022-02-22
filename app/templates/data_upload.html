@@ -2,6 +2,7 @@
 <html lang="en" dir="ltr">
     <head>
         <meta charset="utf-8">
+        
         <title>Turbofan Engine Analysis: Predictive Maintenance</title>
     </head>
     <body>
@@ -34,5 +35,9 @@
               {% endwith %}
             </fieldset>
         </form>
+        <p>
+            <a href="{{ url_for('plot') }}"><input class="text-dark btn btn-light" type=submit value="View Plot" id="opsubmit"></a>
+        </p>
+
     </body>
 </html>

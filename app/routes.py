@@ -3,6 +3,10 @@ import pandas as pd
 import logging
 import re
 import os 
+import base64
+import matplotlib
+matplotlib.use('agg')
+import matplotlib.pyplot as plt
 from flask import Flask
 from flask import Flask, Response, request, jsonify, render_template, flash, send_file
 from file_read_backwards import FileReadBackwards
@@ -23,26 +27,40 @@ def home():
             col_names = index_names + setting_names + sensor_names
             file = request.files.get('file')
             file_test = file.filename
-            logging.warning("routes file_test: " + str(file_test))
             example_engines_df = pd.read_csv(request.files.get('file'), sep='\s+', header=None, 
                     names=col_names)
-            # test_engine_id = example_engines_df['unit_nr']
-            logging.warning("test_engine_id.shape: " + str(test_engine_id.shape))
             file_no = int(list(file_test)[9])
-            logging.warning("file_no: " + str(file_no))
+            engine_no = [str(i) for i in list(file_test)[12:15]]
+            engine_no = "".join(engine_no)
+            engino_no = int(engine_no)
             flash("Done!")
 
         report = CNNLSTMClass.CNNLSTM(dataset="cmapss", file_no=file_no, file_test=file_test, Train=False, trj_wise=True, plot=True)
 
-        # response = report.run()
+        filename = os.getcwd()+"/app/static/images/rul.png"
+        try:
+            with open(filename, 'rb') as file:
+                returnfile = file.read()
 
-    return render_template('data_upload.html', form=form, title='Turbofan Engine Analysis: Predictive Maintenance')
+            return Response(returnfile, mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                                                headers={"Content-disposition": f"attachment; filename=Engine {engine_no} rul.png"})
+        except Exception as e:
+            logging.error(str(e))
+        
+        try:
+            return redirect(next_page)
+        except Exception as e:
+            logging.error(str(e))
 
-@app.route('/download')
-def downloadFile ():
-    #For windows you need to use drive name [ex: F:/Example.pdf]
-    path = os.getcwd()+"/app/static/images/rul.png"
-    return send_file(path, as_attachment=True)
+    return render_template('index.html', form=form, title='Turbofan Engine Analysis: Predictive Maintenance')
+
+@app.route('/plot')
+def plot():
+    return render_template('plot.html', url=f'/static/images/rul.png')
+
+# @app.route('/index')
+# def template(): 
+#     return render_template('index.html')
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(debug=True)

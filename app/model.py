@@ -41,11 +41,8 @@ class CNNLSTMClass():
             raise ValueError("Save path not defined")
         ##################################
 
-        logging.warning("model file_test: " + str(file_test))
         if dataset == "cmapss":
             training_data, testing_data, training_pd, testing_pd, test_engine_id = get_CMAPSSData(save=False, file_test=file_test, files=[file_no])
-            logging.warning("training_data.shape: " + str(training_data.shape))
-            logging.warning("testing_data.shape: " + str(testing_data.shape))
             x_train = training_data[:, :training_data.shape[1] - 1]
             y_train = training_data[:, training_data.shape[1] - 1]
             print("training data CNN-LSTM: ", x_train.shape, y_train.shape)
@@ -268,10 +265,6 @@ class CNNLSTMClass():
                     pred_list = []
                     expected_list = []
                     lower_bound = -0.01
-                    logging.warning("model x_test.shape: " + str(x_test.shape))
-                    logging.warning("model y_test.shape: " + str(y_test.shape))
-                    logging.warning("model test_engine_id: " + str(test_engine_id))
-                    logging.warning("model len(test_engine_id): " + str(len(test_engine_id)))
                     test_trjectory_generator = trjectory_generator(x_test, y_test, test_engine_id, sequence_length,
                                                                 batch_size, lower_bound)
                     for itr in range(trj_iteration):
