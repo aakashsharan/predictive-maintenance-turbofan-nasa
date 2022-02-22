@@ -58,9 +58,6 @@ def home():
 def plot():
     return render_template('plot.html', url=f'/static/images/rul.png')
 
-# @app.route('/index')
-# def template(): 
-#     return render_template('index.html')
 
 if __name__ == "__main__":
-    app.run(port="5000", debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)
